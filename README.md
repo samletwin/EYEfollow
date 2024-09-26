@@ -1,5 +1,5 @@
 # EYEfollow
-Steven Caro and Gian Favero, 2023
+Steven Caro, Gian Favero and Joshua Picchioni 2024
 
 ![Screenshot](images/Logo.png)
 

@@ -1,8 +1,8 @@
 '''
-EYEfollow 1.0
+EYEfollow 1.1
 Home Screen Class
-Gian Favero and Steven Caro
-2023
+Gian Favero, Steven Caro and Joshua Picchioni
+2024
 '''
 
 import tkinter as tk
@@ -32,6 +32,8 @@ class Home_Screen(tk.Frame):
                               command=lambda: [self.onOff("Smooth_Vertical")])
         self.SH_b = tk.Button(self, text = 'Smooth Horizontal', bg="white",
                               command=lambda: [self.onOff("Smooth_Horizontal")])
+        self.SH_b = tk.Button(self, text = 'Text Reading', bg="white",
+                              command=lambda: [self.onOff("Text_Reading")])
         self.start_b = tk.Button(self, text = 'START', bg = "#eee", state="disabled", height=5, width=20, 
                               command=lambda:self.controller.create_test_routine())
 
@@ -77,6 +79,8 @@ class Home_Screen(tk.Frame):
                 self.SV_b.configure(bg="#adffab")
             elif button_name == "Smooth_Horizontal":
                 self.SH_b.configure(bg="#adffab")
+            elif button_name == "Text_Reading":
+                self.SH_b.configure(bg="#adffab")
         else:
             if button_name == "Vertical_Saccade":
                 self.VS_b.configure(bg="white")
@@ -86,7 +90,7 @@ class Home_Screen(tk.Frame):
                 self.SC_b.configure(bg="white")
             elif button_name == "Smooth_Vertical":
                 self.SV_b.configure(bg="white")
-            elif button_name == "Smooth_Horizontal":
+            elif button_name == "Text_Reading":
                 self.SH_b.configure(bg="white")
 
         self.start_b.configure(state="disabled", bg="#eee")

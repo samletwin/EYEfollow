@@ -23,6 +23,7 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+.venv/
 
 # Installer logs
 pip-log.txt
@@ -32,6 +33,7 @@ pip-delete-this-directory.txt
 .tox/
 .coverage
 .cache
+.vscode
 nosetests.xml
 coverage.xml
 

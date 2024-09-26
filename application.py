@@ -1,8 +1,8 @@
 '''
-EYEfollow 1.0
+EYEfollow 1.1
 Application Class
-Gian Favero and Steven Caro
-2023
+Gian Favero, Steven Caro and Joshua Picchioni
+2024
 '''
 
 # Python Imports
@@ -23,12 +23,13 @@ from tkinter.simpledialog import askstring
 # Project Imports
 from testroutine import Test_Routine, Routine_State
 from frames import Home_Screen, Test_Routine_Canvas
+from config import load_config_files
 
 # Set resolution for screen
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
 # Window title
-window_title = "EYEfollow, 2022"
+window_title = "EYEfollow, 2024"
 
 class Application(tk.Tk):
 
@@ -61,7 +62,8 @@ class Application(tk.Tk):
             "Horizontal_Saccade": False,
             "Smooth_Circle": False,
             "Smooth_Vertical": False,
-            "Smooth_Horizontal": False
+            "Smooth_Horizontal": False,
+            "Text_Reading": False,
         }
 
         # Create an instance of the Home Screen frame
@@ -77,6 +79,9 @@ class Application(tk.Tk):
         self.show_home()
 
         self.update_idletasks()
+
+        # load config
+        load_config_files()
 
     def configure_container(self):
         '''
@@ -168,7 +173,7 @@ class Application(tk.Tk):
 
             self.activeButtons = {"Vertical_Saccade" : True, "Horizontal_Saccade" : True, 
                                 "Smooth_Circle" : True,    "Smooth_Vertical" : True, 
-                                "Smooth_Horizontal" : True}
+                                "Smooth_Horizontal" : True, "Text_Reading" : True}
             
             # Reset the home screen buttons
             self.reset_buttons()

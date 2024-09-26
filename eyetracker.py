@@ -1,5 +1,5 @@
 '''
-EYEfollow 1.0
+EYEfollow 1.1
 EyeTracker Data Management Class 
 Gian Favero and Steven Caro
 2023
