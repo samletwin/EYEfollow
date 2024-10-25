@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.io import loadmat
 import pandas as pd
 
 def gzclean(gxin, gyin, flag, time):
@@ -150,7 +149,7 @@ def process_excel_file(file_path, file_path_gaze):
     dataGT = process_ground_truth_data(file_path_gaze, sheets)
 
     for sheet in sheets:
-        path_to_save = r'C:\Users\Sam\Desktop\masters_local\lolz\EYEfollow\images2'
+        path_to_save = r'C:\Users\samle\Desktop\masters_local\EYEfollow\images2'
         eye_data_to_image(dataPC, dataGaze, dataGT, sheet, sheet, path_to_save)
 
     return enabled_buttons
