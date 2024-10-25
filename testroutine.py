@@ -1,52 +1,17 @@
-from math import pi, sin, cos
-from time import time, time_ns
+from math import pi, sin, cos, floor
+from time import time, time_ns, sleep
 from enum import Enum, auto
-from tkinter import messagebox, simpledialog, Toplevel, Label, Entry, Button
+from tkinter import messagebox, simpledialog, Toplevel, Label, Entry, Button, font
 from tkinter.messagebox import askyesno
 import traceback
 import tkinter as tk
 from eyetracker import EyeTracker_DM
-from config import *
-
-
-# Constants to control behaviour of the tests
-test_params = {
-    "Vertical_Saccade": {
-        "Duration": 10,     # s
-        "Frequency": 1,     # Hz
-        "Instruction": "Look back and forth between\ndots as fast as possible"
-    },
-    "Horizontal_Saccade": {
-        "Duration": 10, 
-        "Frequency": 1,
-        "Instruction": "Look back and forth between\ndots as fast as possible"
-    },
-    "Smooth_Circle": {
-        "Duration": 16, 
-        "Frequency": 2/16,
-        "Instruction": "Follow the dot"
-    },
-    "Smooth_Vertical": {
-        "Duration": 22.5,
-        "Frequency": 3.25/22.5,
-        "Instruction": "Follow the dot"
-    },
-    "Smooth_Horizontal": {
-        "Duration": 27,
-        "Frequency": 2/27,
-        "Instruction": "Follow the dot"
-    },
-    "Text_Reading": {
-        "Duration": 2,
-        "Frequency": 1,
-        "Instruction": "Read the text on the screen"
-    },
-}
+import config
+import threading
 
 draw_refresh_rate   = 5       # ms
 countdown_duration  = 3       # s
 state_machine_cycle = 100     # ms
-ball_radius = 12              # px
 
 class Routine_State(Enum):
     countdown   = auto()
@@ -55,24 +20,34 @@ class Routine_State(Enum):
     idle        = auto()
 
 class QuestionsDialog(Toplevel):
-    def __init__(self, parent, questions):
+    def __init__(self, parent, questions, correct_answers):
         super().__init__(parent)
         self.title("Answer the Questions")
         self.answers = []
-
-        # Create a list to store Entry widgets
+        self.correct_answers = correct_answers
+        
+        # Create a list to store Entry widgets or Checkbutton variables
         self.entries = []
 
         # Create labels and entries for each question
-        for i, question in enumerate(questions):
-            Label(self, text=question).pack(pady=(10, 0))  # Add some padding for spacing
-            entry = Entry(self, width=50)
-            entry.pack(pady=(0, 10))  # Add padding between questions
-            self.entries.append(entry)
+        for i, (question, correct_answer) in enumerate(zip(questions, correct_answers)):
+            Label(self, text=f"Q{i+1}: {question}").pack(pady=(10, 0))  # Add some padding for spacing
+            if isinstance(correct_answer, bool):
+                true_var = tk.BooleanVar()
+                false_var = tk.BooleanVar()
+                true_checkbox = tk.Checkbutton(self, text="True", variable=true_var, command=lambda fv=false_var: fv.set(False))
+                false_checkbox = tk.Checkbutton(self, text="False", variable=false_var, command=lambda tv=true_var: tv.set(False))
+                true_checkbox.pack(pady=(0, 5))
+                false_checkbox.pack(pady=(0, 10))
+                self.entries.append((true_var, false_var))
+            else:
+                entry = Entry(self, width=50)
+                entry.pack(pady=(0, 10))  # Add padding between questions
+                self.entries.append(entry)
 
         # Submit button to collect all answers
-        submit_button = Button(self, text="Submit", command=self.submit_answers)
-        submit_button.pack(pady=20)
+        self.submit_button = Button(self, text="Submit", command=self.submit_answers)
+        self.submit_button.pack(pady=20)
 
         # Make sure the window is modal
         self.grab_set()
@@ -82,20 +57,50 @@ class QuestionsDialog(Toplevel):
 
     def submit_answers(self):
         # Collect answers from all entries
-        self.answers = [entry.get() for entry in self.entries]
-        self.destroy()  # Close the dialog
+        self.answers = []
+        for entry in self.entries:
+            if isinstance(entry, tuple):  # True/False checkboxes
+                true_var, false_var = entry
+                if true_var.get():
+                    self.answers.append(True)
+                elif false_var.get():
+                    self.answers.append(False)
+                else:
+                    self.answers.append(None)  # No selection made
+            else:
+                self.answers.append(entry.get())
+        
+        # Display correct answers and indicate if the user's answer was correct
+        for i, (entry, correct_answer) in enumerate(zip(self.entries, self.correct_answers)):
+            result_text = f"Q{i+1} Correct Answer: {correct_answer}"
+            if isinstance(entry, tuple):  # True/False checkboxes
+                true_var, false_var = entry
+                user_answer = True if true_var.get() else False if false_var.get() else None
+                if user_answer == correct_answer:
+                    result_text += " ✓"  # Add a checkmark if the answer is correct
+            else:
+                user_answer = entry.get().strip().lower()
+                if user_answer == correct_answer.strip().lower():
+                    result_text += " ✓"  # Add a checkmark if the answer is correct
+            Label(self, text=result_text, fg="green" if "✓" in result_text else "red").pack(pady=(0, 5))
+
+        # Disable the submit button after submission
+        self.submit_button.config(state='disabled')
+
 
 class Test_Routine:
-    def __init__(self, master, canvas: tk.Canvas):
+    def __init__(self, master, canvas: tk.Canvas, ignore_popup):
         self.master = master
         self.canvas = canvas
-
+        self.ignore_popup = ignore_popup
         self.collect_data = True
         if self.collect_data:
             self.tracker = EyeTracker_DM(master=self)
-        self.GTdata={}
+        self.GTdata  = {'ScreenConfig': {'Width':[self.master.width], 'Height':[self.master.height]}}
+        self.tracker.set_screen_cfg('ScreenConfig', self.GTdata["ScreenConfig"])
 
-        self.ball_radius = ball_radius
+        self.test_params = config.get_full_test_config()
+        self.ball_radius = config.get_ball_radius_px()
         self.ball = self.canvas.create_oval(0, 0, self.ball_radius, self.ball_radius, fill="white")
         self.canvas.itemconfig(self.ball, state='hidden')
 
@@ -126,28 +131,32 @@ class Test_Routine:
             else:
                 self.time_ref = time()
                 self.start_countdown = 1
-                messagebox.showinfo("Proceed?", "Are we ready to proceed?")
+                if self.ignore_popup is not True:
+                    if "Text" in self.current_test:
+                        messagebox.showinfo("Proceed?", "Read the full text, hit any key upon reading the text to continue. Ready to proceed?")
+                    else:
+                        messagebox.showinfo("Proceed?", "Are we ready to proceed?")
                 self.state = Routine_State.countdown
                 if self.current_test != "Done":
                     if "Text" in self.current_test:
                         self.reading_main()
+                    else:
+                        self.GTdata[self.current_test]={}
+                        for key in ["Time", "X", "Y"]:
+                            self.GTdata[self.current_test][key]=[]
+                        if "Saccade" in self.current_test:
+                            if self.current_test == "Vertical_Saccade":
+                                f = self.vertical_saccade()
+                            else:
+                                f = self.horizontal_saccade()
 
-                    self.GTdata[self.current_test]={}
-                    for key in ["Time", "X", "Y"]:
-                        self.GTdata[self.current_test][key]=[]
-                    if "Saccade" in self.current_test:
-                        if self.current_test == "Vertical_Saccade":
-                            f = self.vertical_saccade()
-                        else:
-                            f = self.horizontal_saccade()
-
-                        sac_coords = f(0)
-                        self.GTdata[self.current_test].pop("Time")
-                        self.GTdata[self.current_test]["X"].append(sac_coords[0][0])
-                        self.GTdata[self.current_test]["X"].append(sac_coords[1][0])
-                        self.GTdata[self.current_test]["Y"].append(sac_coords[0][1])
-                        self.GTdata[self.current_test]["Y"].append(sac_coords[1][1])
-                        print(self.GTdata[self.current_test])
+                            sac_coords = f(0)
+                            self.GTdata[self.current_test].pop("Time")
+                            self.GTdata[self.current_test]["X"].append(sac_coords[0][0])
+                            self.GTdata[self.current_test]["X"].append(sac_coords[1][0])
+                            self.GTdata[self.current_test]["Y"].append(sac_coords[0][1])
+                            self.GTdata[self.current_test]["Y"].append(sac_coords[1][1])
+                            print(self.GTdata[self.current_test])
 
         elif self.state == Routine_State.countdown:
             if "Text" not in self.current_test:
@@ -183,17 +192,46 @@ class Test_Routine:
         self.time_ref = time()
         self.start_countdown = 1
         level = simpledialog.askinteger("Input", "Enter the level of difficulty (1-10):", minvalue=1, maxvalue=10)
-        grade_data = get_grade_data(level)
-        
+        grade_data = config.get_grade_data(level)
+        test_config = config.get_text_test_config()
+
         self.canvas.itemconfig(self.countdown_text, state='normal')
         self.canvas.itemconfig(self.ball, state='hidden')
         self.canvas.itemconfig(self.saccade_ball, state='hidden')
-        self.display_text(grade_data.message)
-        self.canvas.after(5000, self.ask_questions, grade_data.questions)
+
+        self.GTdata[self.current_test] = {"X": [], "Y": []}  # gt data is filled in display_text
+        self.display_text(grade_data.message, test_config.minimum_font_size,
+                        test_config.padding_hor_px, test_config.padding_ver_px)
+        self.tracker.start_collection()
+
+        # Bind key press event to stop the tracking and ask questions
+        self.master.bind("<KeyPress>", lambda event: self.ask_questions(grade_data.questions, grade_data.answers))
+
+        # Start a separate thread for continuous tracking
+        self.stop_tracking_event = threading.Event()
+        tracking_thread = threading.Thread(target=self.track_user_reading)
+        tracking_thread.daemon = True
+        tracking_thread.start()
+
+    def track_user_reading(self):
+        while not self.stop_tracking_event.is_set():
+            self.send_tracker_message()
+            sleep(0.1) # Adjust the frequency of tracking messages as needed
+
+    # Modify ask_questions to unbind the keypress event and stop tracking
+    def ask_questions(self, questions, correct_answers):
+        # Stop tracking and unbind keypress event to prevent multiple triggers
+        self.stop_tracking_event.set()
+        self.tracker.stop_collection()
+        self.master.unbind("<KeyPress>")
+        self.canvas.itemconfig(self.countdown_text, state='hidden')
+        dialog = QuestionsDialog(self.master, questions, correct_answers)
+        self.master.wait_window(dialog)
+        self.answers = dialog.answers
+        self.show_retry_dialog()
         
     def wrap_text(self, text:str, max_width, font_size):
         words = text.split()
-        print(words)
         lines = []
         current_line = ""
 
@@ -221,7 +259,7 @@ class Test_Routine:
 
         return "\n".join(lines)
 
-    def get_font_size(self, text, max_width, max_height):
+    def get_font_size(self, text, max_width, max_height, min_font_size):
         font_size = 35  # Starting font size
         temp_text_id = self.canvas.create_text(0, 0, text=text, font=("Arial", font_size, "bold"))
 
@@ -229,7 +267,7 @@ class Test_Routine:
         while self.canvas.bbox(temp_text_id)[2] > max_width or self.canvas.bbox(temp_text_id)[3] > max_height:
             font_size -= 1
             self.canvas.itemconfig(temp_text_id, font=("Arial", font_size, "bold"))
-            if font_size < 10:  # Set a minimum font size limit
+            if font_size < 20:  # Set a minimum font size limit
                 break
 
         # Remove the temporary text object
@@ -237,11 +275,12 @@ class Test_Routine:
 
         return font_size
 
-    def display_text(self, text, mode='all'):
-        max_width = self.master.width - 20  # Set some padding
-        max_height = self.master.height - 20  # Set some padding
-        font_size = self.get_font_size(text, max_width, max_height)
+    def display_text(self, text, min_font_size, padding_hor_px=20, padding_ver_px=20, mode='all'):
+        max_width = self.master.width - padding_hor_px  # Set some padding
+        max_height = self.master.height - padding_ver_px  # Set some padding
+        font_size = self.get_font_size(text, max_width, max_height, min_font_size)
         wrapped_text = self.wrap_text(text, max_width, font_size)
+        self.generate_gtdata_for_text(wrapped_text, font_size)
 
         retry_time = 5000
         # Update the font of countdown_text to the calculated font size
@@ -261,6 +300,47 @@ class Test_Routine:
                 self.canvas.itemconfig(self.countdown_text, text=wrapped_text)
 
         type_text()
+    
+    def generate_gtdata_for_text(self, text, font_size):
+        # Split the wrapped text into lines
+        lines = text.split("\n")
+        font_height = font.Font(family='Arial',size=font_size,weight='bold').metrics('linespace')
+
+        for i, line in enumerate(lines):
+            # Get bounding box for the first and last character of the line
+            temp_text_id = self.canvas.create_text(self.master.width/2, self.master.height/2, 
+                                                   text=line, font=("Arial", font_size, "bold"))
+            bbox = self.canvas.bbox(temp_text_id)
+            if bbox:
+                x_first = bbox[0]
+                x_last = bbox[2]
+
+                # Store GTData for each line
+                self.GTdata[self.current_test]["X"].append(x_first)
+                self.GTdata[self.current_test]["X"].append(x_last)
+                self.GTdata[self.current_test]["X"].append("NaN") # using NaN to distinguish between lines of text
+                
+            # Remove the temporary text object
+            self.canvas.delete(temp_text_id)
+        
+        # get y data
+        if len(lines) % 2 == 0: #even
+            lolz = int(len(lines)/2)
+            for i in range(lolz, -lolz, -1):
+                # if even, first line y value mid point = (screen height / 2 + [number of lines / 2] * [iter - 0.5] * font height 
+                y_midpoint = self.master.height / 2 + (lolz) * (i-0.5) * font_height 
+                self.GTdata[self.current_test]["Y"].append(y_midpoint)
+                self.GTdata[self.current_test]["Y"].append(y_midpoint)
+                self.GTdata[self.current_test]["Y"].append("NaN")
+        else: # odd
+            # y value mid point = (screen height / 2 + [number of lines / 2] * iter * font height)
+            lolz = floor(len(lines)/2)
+            for i in range (lolz, -lolz-1, -1):
+                y_midpoint = self.master.height / 2 + (lolz) * (i) * font_height 
+                self.GTdata[self.current_test]["Y"].append(y_midpoint)
+                self.GTdata[self.current_test]["Y"].append(y_midpoint)
+                self.GTdata[self.current_test]["Y"].append("NaN")
+                
 
     def show_retry_dialog(self):
         retry = askyesno(title="Retry?", message="Would you like to retry the test?")
@@ -269,13 +349,16 @@ class Test_Routine:
             self.current_test = next(self.test_names, "Done")
         else:
             self.reading_main()
-
-    def ask_questions(self, questions):
-        dialog = QuestionsDialog(self.master, questions)
-        self.master.wait_window(dialog)
-        self.answers = dialog.answers
-        self.show_retry_dialog()
-
+    
+    def send_tracker_message(self):
+        if self.collect_data:
+            try:
+                while (msg := self.tracker.read_msg_async()) is not None:
+                    self.tracker.tracker_data.append((time(), *msg))
+                    self.get_pog(msg)
+            except:
+                traceback.print_exc()
+                pass
 
     def draw(self):
         t = time_ns()/1e9 - self.time_ref
@@ -290,16 +373,9 @@ class Test_Routine:
             self.canvas.moveto(self.ball, x_cen - self.ball_radius/2, y_cen - self.ball_radius/2)
             self.canvas.configure(bg="black")
 
-        if self.collect_data:
-            try:
-                while (msg := self.tracker.read_msg_async()) is not None:
-                    self.tracker.tracker_data.append((time(), *msg))
-                    self.get_pog(msg)
-            except:
-                traceback.print_exc()
-                pass
+        self.send_tracker_message()
 
-        if t < test_params[self.current_test]["Duration"]:
+        if t < self.test_params[self.current_test]["Duration"]:
             self.draw_ref = self.canvas.after(draw_refresh_rate, self.draw)
         else:
             self.canvas.itemconfig(self.ball, state="hidden", fill='white')
@@ -319,7 +395,7 @@ class Test_Routine:
             self.canvas.coords(self.ball, x_cen-radius/2, y_cen-radius/2, x_cen+radius/2, y_cen+radius/2)
         
         self.canvas.itemconfig(self.ball, state="normal")
-        self.canvas.itemconfig(self.countdown_text, text=f'{self.count}\n{test_params[self.current_test]["Instruction"]}',state='normal')
+        self.canvas.itemconfig(self.countdown_text, text=f'{self.count}\n{self.test_params[self.current_test]["Instruction"]}',state='normal')
         
         if time() - self.time_ref >= 1:  
             self.count -= 1
@@ -363,13 +439,13 @@ class Test_Routine:
                           (self.master.width / 2 - self.master.height*1.5/2, self.master.height/2)]
 
     def smooth_vertical(self):
-        return lambda t: (0, 0.95 * cos(2 * pi * test_params["Smooth_Vertical"]["Frequency"] * t))
+        return lambda t: (0, 0.95 * cos(2 * pi * self.test_params["Smooth_Vertical"]["Frequency"] * t))
 
     def smooth_horizontal(self):
-        return lambda t: (1.5 * cos(2 * pi * test_params["Smooth_Horizontal"]["Frequency"] * t), 0)
+        return lambda t: (1.5 * cos(2 * pi * self.test_params["Smooth_Horizontal"]["Frequency"] * t), 0)
 
     def smooth_circle(self):
-        return lambda t: (0.75 * cos(2 * pi * test_params["Smooth_Circle"]["Frequency"] * t), 0.75 * sin(2 * pi * test_params["Smooth_Circle"]["Frequency"] * t))
+        return lambda t: (0.75 * cos(2 * pi * self.test_params["Smooth_Circle"]["Frequency"] * t), 0.75 * sin(2 * pi * self.test_params["Smooth_Circle"]["Frequency"] * t))
 
     def get_pog(self, msg):
         if "TIME" in msg[1].keys():

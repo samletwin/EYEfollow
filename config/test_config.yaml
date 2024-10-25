@@ -20,12 +20,14 @@ test_params:
         Frequency: 0.074
         Instruction: Follow the dot
     Text_Reading: 
-        Duration: 2
-        Frequency: 1
-        Instruction: Read the text on the screen
+        Minimum_Font_Size: 20
+        Padding_Horizontal_Px: 200
+        Padding_Vertical_Px: 500
     
-config:
+test_config:
     draw_refresh_rate_ms: 5          
     countdown_duration_s: 3          
     state_machine_cycle_ms: 100          
-    ball_radius_px: 12              
+    ball_radius_px: 12
+general_config:
+    data_output_path: "C:/Users/Sam/Desktop/masters_local/lolz/EYEfollow/output"

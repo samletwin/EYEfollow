@@ -3,74 +3,66 @@ grades_text:
     message: Elephants are big animals. They have long noses called trunks. Elephants use their trunks to eat and drink. 
              They like to eat grass, leaves, and fruit. Elephants live in hot places like Africa and Asia.
     questions:
-      1: What do elephants use their long noses for?
-      2: Where do elephants live?
-      3: What do elephants like to eat?
-      4: Are elephants big or small animals?
-      5: What is the long nose of an elephant called?
+      1: 
+        message: Elephants are native to Africa and Asia.
+        answer: True
+    answers:
+
   grade_2:
     message: Elephants are the largest land animals in the world. They have big ears and long trunks. 
              Elephants use their trunks to pick up food and drink water. They also use their trunks to spray water 
              on their backs to stay cool. Elephants live in Africa and Asia.
     questions:
-      1: What is the largest land animal in the world?
-      2: How do elephants use their trunks to stay cool?
-      3: Name two places where elephants live.
-      4: What do elephants eat? # not answered in message
-      5: What are the big ears of elephants used for?
+      1: 
+        message: Elephants are native to Africa and Asia.
+        answer: True
+    answers:
   grade_3:
     message: Elephants are very big and smart animals. They live in Africa and Asia. They use their long trunks to eat, 
              drink, and play. Elephants eat plants like grass, leaves, and fruit. They live in groups called herds, and 
              they help each other stay safe from danger.
     questions:
-      1: Why are elephants considered smart animals?
-      2: What do elephants eat?
-      3: What do we call the groups that elephants live in?
-      4: How do elephants help each other?
-      5: Name one place where elephants can be found.
+      1: 
+        message: Elephants are native to Africa and Asia.
+        answer: True
   grade_4:
     message: Elephants are the largest animals that live on land. They have long trunks, which they use for eating, 
              drinking, and even playing. Elephants are herbivores, meaning they only eat plants, like grass, leaves, 
              and fruit. They live in groups called herds, and they can be found in Africa and Asia.
     questions:
-      1: What does it mean that elephants are herbivores?
-      2: How do elephants use their trunks?
-      3: What is a herd?
-      4: Name two types of places where elephants live.
-      5: Why are elephants important to their environment?
+      1: 
+        message: Elephants are native to Africa and Asia.
+        answer: True
   grade_5:
     message: Elephants are the largest land mammals, known for their long trunks and large ears. These gentle giants 
              use their trunks to drink water, eat leaves, and communicate with other elephants. Living in herds, elephants 
              can be found in the grasslands and forests of Africa and Asia. They are social animals and care deeply for 
              their families.
     questions:
-      1: What are some uses of an elephant's trunk?
-      2: How do elephants communicate with each other?
-      3: What type of environments do elephants inhabit?
-      4: Why is family important to elephants?
-      5: What do elephants eat besides leaves?
+      1: 
+        message: Elephants are native to Africa and Asia.
+        answer: True
   grade_6:
     message: Elephants, the largest land animals, are highly intelligent creatures found in Africa and Asia. They use 
              their trunks for various purposes, such as picking up food, drinking water, and even showing affection. 
              Elephants are herbivores, feeding on grasses, leaves, and fruit. They live in herds led by an older female, 
              and their social structures are strong, with members often helping one another.
     questions:
-      1: How does the social structure of elephant herds work?
-      2: What types of food do elephants prefer?
-      3: How do elephants show affection to one another?
-      4: Why are elephants considered intelligent?
-      5: What role do elephants play in their ecosystems?
+      1: 
+        message: Elephants are native to Africa and Asia.
+        answer: True
   grade_7:
     message: Elephants, the largest terrestrial mammals, are native to the continents of Africa and Asia. Their most 
              distinctive feature, the trunk, serves as a multi-purpose tool for feeding, drinking, and communication. 
              Elephants are herbivores and play a key role in their ecosystems by shaping their environments. Highly social 
              animals, elephants live in family groups led by a matriarch, and their bonds with one another are profound.
     questions:
-      1: What is the significance of elephants as keystone species?
-      2: How do elephants communicate using their trunks?
-      3: Describe the leadership structure within an elephant herd.
-      4: What are some ecological impacts of elephants?
-      5: Why are the social bonds among elephants important?
+      1: 
+        message: Elephants are native to Africa and Asia.
+        answer: True
+      2: 
+        message: Elephants are carnivores
+        answer: False
   grade_8:
     message: Elephants, the largest land mammals, are known for their intelligence, strong social bonds, and unique physical 
              characteristics, especially their trunks and tusks. They are herbivores that play a crucial role in maintaining 
@@ -78,11 +70,9 @@ grades_text:
              which are often led by the oldest and wisest female, and they exhibit behaviors that show empathy, cooperation, 
              and memory.
     questions:
-      1: What are some behaviors that show elephant empathy?
-      2: How do elephants contribute to their ecosystems?
-      3: What does it mean for a herd to be matriarchal?
-      4: In what ways do elephants demonstrate intelligence?
-      5: How do elephants disperse seeds?
+      1: 
+        message: Elephants are native to Africa and Asia.
+        answer: True
   grade_9:
     message: Elephants are the largest land animals, and their presence is vital to the ecosystems they inhabit. Found in both 
              Africa and Asia, these herbivorous mammals use their trunks not only to gather food and water but also to communicate 
@@ -90,11 +80,9 @@ grades_text:
              to care for the young and protect one another. Their behavior shows remarkable intelligence, memory, and emotional 
              depth.
     questions:
-      1: What does it mean that elephants live in complex social structures?
-      2: How do elephants express their emotions?
-      3: Why is the presence of elephants vital to their ecosystems?
-      4: Describe the roles within a female-led herd.
-      5: What are some threats that elephants face?
+      1: 
+        message: Elephants are native to Africa and Asia.
+        answer: True
   grade_10:
     message: Elephants are the world's largest terrestrial animals, native to Africa and Asia, and are essential keystone species 
              in their environments. These herbivores use their trunks as versatile tools for feeding, drinking, and social interaction, 
@@ -103,8 +91,7 @@ grades_text:
              complex communication. Despite their importance, elephants face significant threats from poaching and habitat loss, 
              making conservation efforts crucial for their survival.
     questions:
-      1: What are the implications of elephants being keystone species?
-      2: How do elephants use their tusks, and why are they important?
-      3: Discuss the cognitive abilities demonstrated by elephants.
-      4: What conservation efforts are important for the survival of elephants?
-      5: How does habitat loss affect elephant populations?
+      1: 
+        message: Elephants are native to Africa and Asia.
+        answer: True
+    

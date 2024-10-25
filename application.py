@@ -22,8 +22,8 @@ from tkinter.simpledialog import askstring
 
 # Project Imports
 from testroutine import Test_Routine, Routine_State
-from frames import Home_Screen, Test_Routine_Canvas
-from config import load_config_files
+from frames import Home_Screen, Test_Routine_Canvas, Results_Frame
+from config import load_config_files, get_data_output_path
 
 # Set resolution for screen
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
@@ -37,14 +37,21 @@ class Application(tk.Tk):
         HOME      = 1
         EYE_TEST  = 2
         COUNTDOWN = 3
+        RESULTS   = 4
     
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
         self.title(window_title)
 
-        # Take path to save data from command line
-        self.path = sys.argv[1]
+        # load config
+        load_config_files()
 
+        # Take path to save data from command line
+        # self.path = sys.argv[1]
+        self.path = get_data_output_path()
+        # self.ignore_popup = True if sys.argv[2] == 'true' else False
+        self.ignore_popup = False
+        
         # Create container for application
         self.container = self.configure_container()
 
@@ -73,16 +80,17 @@ class Application(tk.Tk):
         self.test_routine_canvas = Test_Routine_Canvas(master=self.container, controller=self)
 
         # Create an instance of a test routine object (displayed on test_routine_canvas)
-        self.test_routine = Test_Routine(self, self.test_routine_canvas)
+        self.test_routine = Test_Routine(self, self.test_routine_canvas, self.ignore_popup)
+
+        # Create an instance of the Results Frame
+        self.results_frame = Results_Frame(master=self.container, controller=self, input_directory=self.path)
 
         # Show the home screen
         self.show_home()
 
         self.update_idletasks()
 
-        # load config
-        load_config_files()
-
+        
     def configure_container(self):
         '''
         Define the container and grid of the application
@@ -167,7 +175,11 @@ class Application(tk.Tk):
         '''
         Define exit behaviour once the selected vision therapy tests have been completed
         '''
-        answer = showinfo(title="Completion", message="Eye Test Complete")
+        if self.ignore_popup is False:
+            answer = showinfo(title="Completion", message="Eye Test Complete")
+        else:
+            answer = True
+
         if answer:
             self.frame.tkraise() 
 
@@ -201,6 +213,14 @@ class Application(tk.Tk):
         
         self.frame.reset_buttons()
 
+    def show_results(self):
+        """
+        Show the Results Frame.
+        """
+        self.results_frame.grid(row=0, column=0, sticky="nsew")
+        self.results_frame.tkraise()
+        self.current_frame = self.CURRENT_FRAME.RESULTS
+
     def create_test_routine(self):
         '''
         Create the array of routines selected for the current sequence of vision tests
@@ -212,7 +232,10 @@ class Application(tk.Tk):
             sleep(10e-2)
 
         # Get participant's name
-        participant_name = askstring("Input Name", f"Input Participant's Name{30*' '}")
+        if self.ignore_popup is not True:
+            participant_name = askstring("Input Name", f"Input Participant's Name{30*' '}")
+        else:
+            participant_name = ''
 
         if participant_name is None:
             self.reset_buttons()

@@ -1,5 +1,5 @@
 @echo off
 git checkout main
 git pull
-python "application.py" "C:/Users/gradtest/Desktop/Test Results"
+python "application.py" "C:/Users/gradtest/Desktop/Test Results" "false"
 pause

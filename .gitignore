@@ -54,3 +54,8 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
+
+# private
+data_processing/
+TODO
+images2/

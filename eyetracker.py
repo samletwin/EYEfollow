@@ -17,10 +17,13 @@ class EyeTracker_DM(EyeTracker):
     def __init__(self, master):
         super().__init__()
         self.master = master
-        #self.tracker = EyeTracker()
+        self.tracker = EyeTracker()
         self.tracker_data = None
         self.dfs = {}
         self.GT_dfs = {}
+
+    def set_screen_cfg(self, key, screen_cfg_data):
+        self.GT_dfs[key] = pd.DataFrame(screen_cfg_data)
     
     def start_collection(self):
         '''
