@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.io import loadmat
 import pandas as pd
 
 def gzclean(gxin, gyin, flag, time):

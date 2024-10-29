@@ -58,8 +58,8 @@ class Home_Screen(tk.Frame):
         self.SV_b.grid(row=1, column=5, padx=10)
         self.SH_b.grid(row=1, column=6, padx=10)
         self.TR_b.grid(row=1, column=7, padx=10)
-        self.start_b.grid(row=3, column=0, columnspan = 9, pady=75)
-        self.results_b.grid(row=5, column=0, columnspan = 9, pady=75)
+        self.start_b.grid(row=2, column=0, columnspan = 9, pady=50)
+        self.results_b.grid(row=3, column=0, columnspan = 9, pady=50)
 
     def configure_grid(self):
         '''
