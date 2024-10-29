@@ -95,38 +95,46 @@ def eye_data_to_image(dataPC, dataGaze, dataGT, key, title, pathToSave=None):
     Plots data for the left and right eye based on the provided data.
     """
 
-    fig, ax = plt.subplots(1, 2, figsize=(16, 9))
+    fig, ax = plt.subplots(2, 2, figsize=(16, 9))
     plt.suptitle(title)
     
     # Left eye plot
-    line1, = ax[0].plot(dataPC[f'L_{key}'][:, 0], dataPC[f'L_{key}'][:, 1], '.', color=[0.4660, 0.6740, 0.1880], label='Pupil')
-    line2, = ax[0].plot(dataGaze[f'L_{key}'][:, 0], dataGaze[f'L_{key}'][:, 1], '.', color='red', label='Gaze')
-    line3, = ax[0].plot(dataGT[key][:, 0], dataGT[key][:, 1], linewidth=3, color='blue', label='Ground Truth')
-    ax[0].set_title("Left eye")
-    ax[0].set_xlim([0, 1])
-    ax[0].set_ylim([0, 1])
-    ax[0].grid(True)
+    line1, = ax[0][0].plot(dataPC[f'L_{key}'][:, 0], dataPC[f'L_{key}'][:, 1], '.', color=[0.4660, 0.6740, 0.1880], label='Pupil')
+    line2, = ax[0][0].plot(dataGaze[f'L_{key}'][:, 0], dataGaze[f'L_{key}'][:, 1], '.', color='red', label='Gaze')
+    line3, = ax[0][0].plot(dataGT[key][:, 0], dataGT[key][:, 1], linewidth=3, color='blue', label='Ground Truth')
+    ax[0][0].set_title("Left eye")
+    ax[0][0].set_xlim([0, 1])
+    ax[0][0].set_ylim([0, 1])
+    ax[0][0].grid(True)
 
     # Right eye plot
-    ax[1].plot(dataPC[f'R_{key}'][:, 0], dataPC[f'R_{key}'][:, 1], '.', color=[0.4660, 0.6740, 0.1880])
-    ax[1].plot(dataGaze[f'R_{key}'][:, 0], dataGaze[f'R_{key}'][:, 1], '.', color='red')
-    ax[1].plot(dataGT[key][:, 0], dataGT[key][:, 1], linewidth=3, color='blue')
-    ax[1].set_title("Right eye")
-    ax[1].set_xlim([0, 1])
-    ax[1].set_ylim([0, 1])
-    ax[1].grid(True)
+    ax[0][1].plot(dataPC[f'R_{key}'][:, 0], dataPC[f'R_{key}'][:, 1], '.', color=[0.4660, 0.6740, 0.1880])
+    ax[0][1].plot(dataGaze[f'R_{key}'][:, 0], dataGaze[f'R_{key}'][:, 1], '.', color='red')
+    ax[0][1].plot(dataGT[key][:, 0], dataGT[key][:, 1], linewidth=3, color='blue')
+    ax[0][1].set_title("Right eye")
+    ax[0][1].set_xlim([0, 1])
+    ax[0][1].set_ylim([0, 1])
+    ax[0][1].grid(True)
+
+    # Left eye plot - pupil only
+    ax[1][0].plot(dataPC[f'L_{key}'][:, 0], dataPC[f'L_{key}'][:, 1], '.', color=[0.4660, 0.6740, 0.1880])
+    ax[1][0].grid(True)
+
+
+    # Right eye plot - pupil only
+    ax[1][1].plot(dataPC[f'R_{key}'][:, 0], dataPC[f'R_{key}'][:, 1], '.', color=[0.4660, 0.6740, 0.1880])
+    ax[1][1].grid(True)
 
     # Add legend to the entire figure
     fig.legend(handles=[line1,line2,line3])
     if pathToSave is not None:
         plt.savefig(f"{pathToSave}/{key}.png", bbox_inches='tight', dpi=100)
 
-def process_excel_file(file_path, file_path_gaze):
+def process_excel_file(file_path, file_path_gaze, output_folder):
     """
     Process the Excel file and return a dictionary indicating which buttons should be enabled.
     Handles errors if sheets are not present by setting corresponding keys to False.
     """
-
 
     sheets = ['Vertical_Saccade', 'Horizontal_Saccade', 'Smooth_Circle', 'Smooth_Horizontal', 'Smooth_Vertical', 'Text_Reading']
     enabled_buttons = {sheet: False for sheet in sheets}
@@ -150,7 +158,6 @@ def process_excel_file(file_path, file_path_gaze):
     dataGT = process_ground_truth_data(file_path_gaze, sheets)
 
     for sheet in sheets:
-        path_to_save = r'C:\Users\Sam\Desktop\masters_local\lolz\EYEfollow\images2'
-        eye_data_to_image(dataPC, dataGaze, dataGT, sheet, sheet, path_to_save)
+        eye_data_to_image(dataPC, dataGaze, dataGT, sheet, sheet, output_folder)
 
     return enabled_buttons

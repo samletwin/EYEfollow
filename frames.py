@@ -11,6 +11,8 @@ from tkinter import ttk
 from tkinter.messagebox import *
 import os
 from processing import process_excel_file
+import threading
+
 class Home_Screen(tk.Frame):
     '''
     Class to represent the "Home Screen" of the application
@@ -163,6 +165,9 @@ class Results_Frame(tk.Frame):
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(1, weight=1)
 
+        self.animate_text = False
+        self.animate_counter = 0
+
     def tkraise(self, aboveThis=None):
         super().tkraise(aboveThis)
         # update excel files
@@ -183,8 +188,43 @@ class Results_Frame(tk.Frame):
         file_name, file_extension = os.path.splitext(selected_file)
         file_name_gt = file_name + '_GT' + file_extension
         file_path_gt = os.path.join(self.input_directory, file_name_gt)
-        enabled_buttons = process_excel_file(file_path, file_path_gt)
+        self.start_processing(file_path, file_path_gt)
 
+    def animate_text_func(self):
+        dots = '.'*self.animate_counter
+        self.animate_counter += 1 
+        if self.animate_counter > 3:
+            self.animate_counter = 1
+        if self.animate_text is True:
+            self.result_canvas.delete('all')
+            self.result_canvas.create_text(self.result_canvas.winfo_width() // 2, self.result_canvas.winfo_height() // 2, text=f"Processing file{dots}", font=("Helvetica", 16))
+            self.result_canvas.after(500, self.animate_text_func)
+
+    def start_processing(self, file_path, file_path_gt):
+        def thread_function():
+            nonlocal file_path, file_path_gt
+            # Process the file in the background
+            enabled_buttons = process_excel_file(file_path, file_path_gt, self.input_directory)
+            
+            # Now that processing is done, use `after` to safely update the canvas in the main thread
+            self.result_canvas.after(0, self.update_canvas_with_file_results, enabled_buttons)
+
+        # Display "Processing file..." immediately
+        self.animate_text = True
+        self.animate_counter = 0
+        self.animate_text_func()
+
+        # Start the thread
+        thread = threading.Thread(target=thread_function)
+        thread.start()
+
+    def update_canvas_with_file_results(self, enabled_buttons):
+        # delete prev text
+        self.animate_text = False
+        self.animate_counter = 0
+        self.result_canvas.delete("all")
+        self.result_canvas.create_text(self.result_canvas.winfo_width() // 2, self.result_canvas.winfo_height() // 2, text=f"Processing complete!~", font=("Helvetica", 16))
+        
         # Enable buttons based on the result of file processing
         self.VS_button.config(state='normal' if enabled_buttons.get('Vertical_Saccade') else 'disabled')
         self.HS_button.config(state='normal' if enabled_buttons.get('Horizontal_Saccade') else 'disabled')
@@ -195,26 +235,25 @@ class Results_Frame(tk.Frame):
 
         # Display message if no data is available
         if not any(enabled_buttons.values()):
-            self.result_canvas.delete("all")
             self.result_canvas.create_text(self.result_canvas.winfo_width() // 2, self.result_canvas.winfo_height() // 2, text="No data present", fill="black", font=("Helvetica", 16))
 
     def show_vertical_saccade(self):
-        self.display_image('images2/Vertical_Saccade.png')
+        self.display_image(f'{self.input_directory}/Vertical_Saccade.png')
 
     def show_horizontal_saccade(self):
-        self.display_image('images2/Horizontal_Saccade.png')
+        self.display_image(f'{self.input_directory}/Horizontal_Saccade.png')
 
     def show_smooth_circle(self):
-        self.display_image('images2/Smooth_Circle.png')
+        self.display_image(f'{self.input_directory}/Smooth_Circle.png')
 
     def show_smooth_vertical(self):
-        self.display_image('images2/Smooth_Vertical.png')
+        self.display_image(f'{self.input_directory}/Smooth_Vertical.png')
 
     def show_smooth_horizontal(self):
-        self.display_image('images2/Smooth_Horizontal.png')
+        self.display_image(f'{self.input_directory}/Smooth_Horizontal.png')
 
     def show_text_reading(self):
-        self.display_image('images2/Text_Reading.png')
+        self.display_image(f'{self.input_directory}/Text_Reading.png')
 
     def display_image(self, image_path):
         """Display an image in the result canvas."""
