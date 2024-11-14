@@ -275,7 +275,7 @@ class Test_Routine:
 
         return font_size
 
-    def display_text(self, text, min_font_size, padding_hor_px=20, padding_ver_px=20, mode='all'):
+    def display_text(self, text, min_font_size, padding_hor_px=450, padding_ver_px=300, mode='all'):
         max_width = self.master.width - padding_hor_px  # Set some padding
         max_height = self.master.height - padding_ver_px  # Set some padding
         font_size = self.get_font_size(text, max_width, max_height, min_font_size)
