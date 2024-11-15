@@ -19,75 +19,6 @@ class Routine_State(Enum):
     drawing     = auto()
     idle        = auto()
 
-class QuestionsDialog(Toplevel):
-    def __init__(self, parent, questions, correct_answers):
-        super().__init__(parent)
-        self.title("Answer the Questions")
-        self.answers = []
-        self.correct_answers = correct_answers
-        
-        # Create a list to store Entry widgets or Checkbutton variables
-        self.entries = []
-
-        # Create labels and entries for each question
-        for i, (question, correct_answer) in enumerate(zip(questions, correct_answers)):
-            Label(self, text=f"Q{i+1}: {question}").pack(pady=(10, 0))  # Add some padding for spacing
-            if isinstance(correct_answer, bool):
-                true_var = tk.BooleanVar()
-                false_var = tk.BooleanVar()
-                true_checkbox = tk.Checkbutton(self, text="True", variable=true_var, command=lambda fv=false_var: fv.set(False))
-                false_checkbox = tk.Checkbutton(self, text="False", variable=false_var, command=lambda tv=true_var: tv.set(False))
-                true_checkbox.pack(pady=(0, 5))
-                false_checkbox.pack(pady=(0, 10))
-                self.entries.append((true_var, false_var))
-            else:
-                entry = Entry(self, width=50)
-                entry.pack(pady=(0, 10))  # Add padding between questions
-                self.entries.append(entry)
-
-        # Submit button to collect all answers
-        self.submit_button = Button(self, text="Submit", command=self.submit_answers)
-        self.submit_button.pack(pady=20)
-
-        # Make sure the window is modal
-        self.grab_set()
-        self.transient(parent)
-        self.parent = parent
-        self.result = None
-
-    def submit_answers(self):
-        # Collect answers from all entries
-        self.answers = []
-        for entry in self.entries:
-            if isinstance(entry, tuple):  # True/False checkboxes
-                true_var, false_var = entry
-                if true_var.get():
-                    self.answers.append(True)
-                elif false_var.get():
-                    self.answers.append(False)
-                else:
-                    self.answers.append(None)  # No selection made
-            else:
-                self.answers.append(entry.get())
-        
-        # Display correct answers and indicate if the user's answer was correct
-        for i, (entry, correct_answer) in enumerate(zip(self.entries, self.correct_answers)):
-            result_text = f"Q{i+1} Correct Answer: {correct_answer}"
-            if isinstance(entry, tuple):  # True/False checkboxes
-                true_var, false_var = entry
-                user_answer = True if true_var.get() else False if false_var.get() else None
-                if user_answer == correct_answer:
-                    result_text += " ✓"  # Add a checkmark if the answer is correct
-            else:
-                user_answer = entry.get().strip().lower()
-                if user_answer == correct_answer.strip().lower():
-                    result_text += " ✓"  # Add a checkmark if the answer is correct
-            Label(self, text=result_text, fg="green" if "✓" in result_text else "red").pack(pady=(0, 5))
-
-        # Disable the submit button after submission
-        self.submit_button.config(state='disabled')
-
-
 class Test_Routine:
     def __init__(self, master, canvas: tk.Canvas, ignore_popup):
         self.master = master
@@ -115,7 +46,6 @@ class Test_Routine:
         self.canvas.itemconfig(self.countdown_text, state='hidden')
 
         self.variable_reset()
-
         self.main_function()
 
     def main_function(self):
@@ -205,7 +135,7 @@ class Test_Routine:
         self.tracker.start_collection()
 
         # Bind key press event to stop the tracking and ask questions
-        self.master.bind("<KeyPress>", lambda event: self.ask_questions(grade_data.questions, grade_data.answers))
+        self.master.bind("<KeyPress>", lambda event: self.show_questions_on_canvas(grade_data.questions))
 
         # Start a separate thread for continuous tracking
         self.stop_tracking_event = threading.Event()
@@ -213,22 +143,55 @@ class Test_Routine:
         tracking_thread.daemon = True
         tracking_thread.start()
 
+    def show_questions_on_canvas(self, questions):
+        self.canvas.delete("all")  # Clear previous content on canvas
+        self.canvas.config(cursor='arrow')
+        y_offset = 50  # Start position for questions
+        self.user_answers = []  # Store user answers
+
+        for i, question in enumerate(questions):
+            question_text = question["message"]
+            options = question["options"]
+            correct_answer = question["answer"]
+
+            question_id = self.canvas.create_text(50, y_offset, anchor="nw", text=f"Q{i+1}: {question_text}", font=("Arial", 16, "bold"))
+            y_offset += 30 
+            radio_var = tk.StringVar(value="")  
+            for option in options:
+                option_button = tk.Radiobutton(self.master, text=option, variable=radio_var, value=option, 
+                                               command=lambda opt=option, var=radio_var: self.store_answer(var, opt, i))
+                option_window = self.canvas.create_window(50, y_offset, anchor="nw", window=option_button)
+                y_offset += 25  
+
+            self.user_answers.append((radio_var, correct_answer))
+            y_offset += 20  # Additional space between questions
+
+        submit_button = tk.Button(self.master, text="Submit Answers", command=self.submit_answers)
+        self.canvas.create_window(50, y_offset, anchor="nw", window=submit_button)
+
+    def store_answer(self, radio_var, option, question_index):
+        self.user_answers[question_index] = (radio_var, option)
+
+    def submit_answers(self):
+        y_offset = 50  # Reset y_offset to display results below questions
+        self.canvas.delete("all")
+
+        for i, (radio_var, correct_answer) in enumerate(self.user_answers):
+            user_answer = radio_var.get()
+            result_text = f"Q{i+1}: {'Correct' if user_answer == correct_answer else 'Incorrect'}"
+            result_text += f" (Your Answer: {user_answer}, Correct Answer: {correct_answer})"
+            result_color = "green" if user_answer == correct_answer else "red"
+            self.canvas.create_text(50, y_offset, anchor="nw", text=result_text, fill=result_color, font=("Arial", 16))
+            y_offset += 30  # Space between each result
+
+        # Display a retry button for reattempting the questions
+        retry_button = tk.Button(self.master, text="Retry", command=self.reading_main)
+        self.canvas.create_window(50, y_offset + 20, anchor="nw", window=retry_button)
+
     def track_user_reading(self):
         while not self.stop_tracking_event.is_set():
             self.send_tracker_message()
             sleep(0.1) # Adjust the frequency of tracking messages as needed
-
-    # Modify ask_questions to unbind the keypress event and stop tracking
-    def ask_questions(self, questions, correct_answers):
-        # Stop tracking and unbind keypress event to prevent multiple triggers
-        self.stop_tracking_event.set()
-        self.tracker.stop_collection()
-        self.master.unbind("<KeyPress>")
-        self.canvas.itemconfig(self.countdown_text, state='hidden')
-        dialog = QuestionsDialog(self.master, questions, correct_answers)
-        self.master.wait_window(dialog)
-        self.answers = dialog.answers
-        self.show_retry_dialog()
         
     def wrap_text(self, text:str, max_width, font_size):
         words = text.split()
