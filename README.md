@@ -15,7 +15,7 @@ EYEfollow is currently under development at the University of Windsor in a partn
 4) In Gazepoint Analysis, make a new project and hit the calibrate button
 5) Wait for calibration to finish, then exit Gazepoint Analysis and return to Gazepoint Control
 6) Ensure that the calibration sequence occurs when the calibrate button is pressed.
-7) Press "P" to enable Gain Sweep (will be indicated in the status bar at the bottom of the window)
+7) Press "P" to enable Gain Sweep (will be indicated in the status bar at the bottom of the window) 
 
 ### Running the Code
 This project requires Python 3.9.
