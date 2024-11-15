@@ -43,8 +43,19 @@ class Application(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
         self.title(window_title)
 
+
+        # Use the relative path
+        base_path = os.path.dirname(os.path.abspath(__file__))
+        relative_path = "./output"
+        self.path = os.path.join(base_path, relative_path)
+
+        # If no folder, make it
+        if not os.path.exists(self.path):
+            os.makedirs(self.path)
+        
         # load config
         load_config_files()
+        
 
         # Take path to save data from command line
         # self.path = sys.argv[1]

@@ -30,4 +30,4 @@ test_config:
     state_machine_cycle_ms: 100          
     ball_radius_px: 12
 general_config:
-    data_output_path: "C:/Users/Sam/Desktop/masters_local/lolz/EYEfollow/output"
+    data_output_path: "./output"
