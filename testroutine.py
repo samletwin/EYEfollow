@@ -193,7 +193,8 @@ class Test_Routine:
             self.send_tracker_message()
             sleep(0.1) # Adjust the frequency of tracking messages as needed
         
-    def wrap_text(self, text:str, max_width, font_size):
+    def wrap_text(self, text: str, max_width, max_height, min_font_size=20):
+        font_size = 100  # Starting font size
         words = text.split()
         lines = []
         current_line = ""
@@ -201,48 +202,49 @@ class Test_Routine:
         # Create a temporary text object to measure text size
         temp_text_id = self.canvas.create_text(0, 0, text="", font=("Arial", font_size, "bold"))
 
-        for word in words:
-            # Measure the current line with the new word
-            self.canvas.itemconfig(temp_text_id, text=(current_line + " " + word).strip())
+        while True:
+            # Try wrapping the text with the current font size
+            for word in words:
+                # Measure the current line with the new word
+                self.canvas.itemconfig(temp_text_id, text=(current_line + " " + word).strip())
+                bbox = self.canvas.bbox(temp_text_id)
+                width = bbox[2] - bbox[0]
+                if width > max_width:
+                    # If the current line width exceeds max width, start a new line
+                    lines.append(current_line.strip())
+                    current_line = word
+                else:
+                    # Add the word to the current line
+                    current_line += " " + word if current_line else word
+
+            # Add the last line
+            lines.append(current_line.strip())
+
+            # Check if the wrapped text fits within the max height
+            self.canvas.itemconfig(temp_text_id, text="\n".join(lines))
             bbox = self.canvas.bbox(temp_text_id)
-            width = bbox[2] - bbox[0]
-            if width > max_width:
-                # If the current line width exceeds max width, start a new line
-                lines.append(current_line.strip())
-                current_line = word
+            text_height = bbox[3] - bbox[1]
+
+            if text_height <= max_height and font_size >= min_font_size:
+                break  # The text fits within the constraints
             else:
-                # Add the word to the current line
-                current_line += " " + word if current_line else word
-
-        # Add the last line
-        lines.append(current_line.strip())
-
-        # Remove the temporary text object
-        self.canvas.delete(temp_text_id)
-
-        return "\n".join(lines)
-
-    def get_font_size(self, text, max_width, max_height, min_font_size):
-        font_size = 35  # Starting font size
-        temp_text_id = self.canvas.create_text(0, 0, text=text, font=("Arial", font_size, "bold"))
-
-        # Gradually decrease font size until text fits within the canvas
-        while self.canvas.bbox(temp_text_id)[2] > max_width or self.canvas.bbox(temp_text_id)[3] > max_height:
-            font_size -= 1
-            self.canvas.itemconfig(temp_text_id, font=("Arial", font_size, "bold"))
-            if font_size < 20:  # Set a minimum font size limit
-                break
+                # Decrease the font size and try again
+                font_size -= 1
+                if font_size < min_font_size:
+                    break
+                lines = []
+                current_line = ""
+                self.canvas.itemconfig(temp_text_id, font=("Arial", font_size, "bold"))
 
         # Remove the temporary text object
         self.canvas.delete(temp_text_id)
 
-        return font_size
+        return "\n".join(lines), font_size
 
     def display_text(self, text, min_font_size, padding_hor_px=450, padding_ver_px=300, mode='all'):
         max_width = self.master.width - padding_hor_px  # Set some padding
         max_height = self.master.height - padding_ver_px  # Set some padding
-        font_size = self.get_font_size(text, max_width, max_height, min_font_size)
-        wrapped_text = self.wrap_text(text, max_width, font_size)
+        wrapped_text, font_size = self.wrap_text(text, max_width, max_height, min_font_size)
         self.generate_gtdata_for_text(wrapped_text, font_size)
 
         retry_time = 5000
@@ -252,17 +254,18 @@ class Test_Routine:
         def type_text(index=0):
             if mode == 'letter':
                 if index < len(wrapped_text):
-                    self.canvas.itemconfig(self.countdown_text, text=wrapped_text[:index+1])
-                    self.canvas.after(100, type_text, index+1)
+                    self.canvas.itemconfig(self.countdown_text, text=wrapped_text[:index + 1])
+                    self.canvas.after(100, type_text, index + 1)
             elif mode == 'word':
                 words = wrapped_text.split()
                 if index < len(words):
-                    self.canvas.itemconfig(self.countdown_text, text=' '.join(words[:index+1]))
-                    self.canvas.after(300, type_text, index+1)
+                    self.canvas.itemconfig(self.countdown_text, text=' '.join(words[:index + 1]))
+                    self.canvas.after(300, type_text, index + 1)
             elif mode == 'all':
                 self.canvas.itemconfig(self.countdown_text, text=wrapped_text)
 
         type_text()
+
     
     def generate_gtdata_for_text(self, text, font_size):
         # Split the wrapped text into lines
