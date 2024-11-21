@@ -184,61 +184,97 @@ def process_ground_truth_data(file_path, sheets):
  
     return gt_data
  
-def eye_data_to_image(dataPC, dataGaze, dataGT, key, title, pathToSave=None):
+def eye_data_to_image(dataPC, dataGaze, dataGT, key, title, pathToSave=None, plotPCData = False):
     """
     Plots data for the left and right eye based on the provided data.
     """
  
-    fig, ax = plt.subplots(2, 2, figsize=(16, 9))
-    plt.suptitle(title)
-   
-    # Left eye plot
-    line1, = ax[0][0].plot(dataPC[f'L_{key}'][:, 0], dataPC[f'L_{key}'][:, 1], '.', color=[0.4660, 0.6740, 0.1880], label='Pupil')
-    line2, = ax[0][0].plot(dataGaze[f'L_{key}'][:, 0], dataGaze[f'L_{key}'][:, 1], '.', color='red', label='Gaze')
-    line3, = ax[0][0].plot(dataGT[key][:, 0], dataGT[key][:, 1], linewidth=3, color='blue', label='Ground Truth')
-    ax[0][0].set_title("Left eye")
-    ax[0][0].set_xlim([0, 1])
-    ax[0][0].set_ylim([0, 1])
-    ax[0][0].grid(True)
- 
-    # Right eye plot
-    ax[0][1].plot(dataPC[f'R_{key}'][:, 0], dataPC[f'R_{key}'][:, 1], '.', color=[0.4660, 0.6740, 0.1880])
-    ax[0][1].plot(dataGaze[f'R_{key}'][:, 0], dataGaze[f'R_{key}'][:, 1], '.', color='red')
-    ax[0][1].plot(dataGT[key][:, 0], dataGT[key][:, 1], linewidth=3, color='blue')
-    ax[0][1].set_xlim([0, 1])
-    ax[0][1].set_ylim([0, 1])
-    ax[0][1].grid(True)
- 
-    # Left eye plot - pupil only
-    ax[1][0].plot(dataPC[f'L_{key}'][:, 0], dataPC[f'L_{key}'][:, 1], '.', color=[0.4660, 0.6740, 0.1880])
-    ax[1][0].grid(True)
- 
-    # Right eye plot - pupil only
-    ax[1][1].plot(dataPC[f'R_{key}'][:, 0], dataPC[f'R_{key}'][:, 1], '.', color=[0.4660, 0.6740, 0.1880])
-    ax[1][1].grid(True)
- 
-    # perform metrics
-    if ('Saccade' in key):
-        rmse_l = saccade_metric('L', key, dataGaze, dataGT)
-        rmse_r = saccade_metric('R', key, dataGaze, dataGT)
-        ax[0][0].set_title(f"Left eye\nRMSE={rmse_l}")
-        ax[0][1].set_title(f"Right eye\nRMSE={rmse_r}")
-    elif('Smooth' in key):
-        rmse_l, corr_l = smooth_pursuit_metric('L', key, dataGaze, dataGT)
-        rmse_r, corr_r = smooth_pursuit_metric('R', key, dataGaze, dataGT)
-        ax[0][0].set_title(f"Left eye\nRMSE={rmse_l} CORR={corr_l}")
-        ax[0][1].set_title(f"Right eye\nRMSE={rmse_r} CORR={corr_r}")
+    if plotPCData is True:
+        fig, ax = plt.subplots(2, 2, figsize=(16, 9))
+        plt.suptitle(title)
+    
+        # Left eye plot
+        line1, = ax[0][0].plot(dataPC[f'L_{key}'][:, 0], dataPC[f'L_{key}'][:, 1], '.', color=[0.4660, 0.6740, 0.1880], label='Pupil')
+        line2, = ax[0][0].plot(dataGaze[f'L_{key}'][:, 0], dataGaze[f'L_{key}'][:, 1], '.', color='red', label='Gaze')
+        line3, = ax[0][0].plot(dataGT[key][:, 0], dataGT[key][:, 1], linewidth=3, color='blue', label='Ground Truth')
+        ax[0][0].set_title("Left eye")
+        ax[0][0].set_xlim([0, 1])
+        ax[0][0].set_ylim([0, 1])
+        ax[0][0].grid(True)
+    
+        # Right eye plot
+        ax[0][1].plot(dataPC[f'R_{key}'][:, 0], dataPC[f'R_{key}'][:, 1], '.', color=[0.4660, 0.6740, 0.1880])
+        ax[0][1].plot(dataGaze[f'R_{key}'][:, 0], dataGaze[f'R_{key}'][:, 1], '.', color='red')
+        ax[0][1].plot(dataGT[key][:, 0], dataGT[key][:, 1], linewidth=3, color='blue')
+        ax[0][1].set_xlim([0, 1])
+        ax[0][1].set_ylim([0, 1])
+        ax[0][1].grid(True)
+    
+        # Left eye plot - pupil only
+        ax[1][0].plot(dataPC[f'L_{key}'][:, 0], dataPC[f'L_{key}'][:, 1], '.', color=[0.4660, 0.6740, 0.1880])
+        ax[1][0].grid(True)
+    
+        # Right eye plot - pupil only
+        ax[1][1].plot(dataPC[f'R_{key}'][:, 0], dataPC[f'R_{key}'][:, 1], '.', color=[0.4660, 0.6740, 0.1880])
+        ax[1][1].grid(True)
+
+        # perform metrics
+        if ('Saccade' in key):
+            rmse_l = saccade_metric('L', key, dataGaze, dataGT)
+            rmse_r = saccade_metric('R', key, dataGaze, dataGT)
+            ax[0][0].set_title(f"Left eye\nRMSE={rmse_l}")
+            ax[0][1].set_title(f"Right eye\nRMSE={rmse_r}")
+        elif('Smooth' in key):
+            rmse_l, corr_l = smooth_pursuit_metric('L', key, dataGaze, dataGT)
+            rmse_r, corr_r = smooth_pursuit_metric('R', key, dataGaze, dataGT)
+            ax[0][0].set_title(f"Left eye\nRMSE={rmse_l} CORR={corr_l}")
+            ax[0][1].set_title(f"Right eye\nRMSE={rmse_r} CORR={corr_r}")
+        else:
+            ax[0][0].set_title(f"Left eye")
+            ax[0][1].set_title(f"Right eye")
     else:
-        ax[0][0].set_title(f"Left eye")
-        ax[0][1].set_title(f"Right eye")
-   
-    # Add legend to the entire figure
-    fig.legend(handles=[line1,line2,line3])
+        fig, ax = plt.subplots(1, 2, figsize=(16, 9))
+        plt.suptitle(title)
+    
+        # Left eye plot
+        line2, = ax[0].plot(dataGaze[f'L_{key}'][:, 0], dataGaze[f'L_{key}'][:, 1], '.', color='red', label='Gaze')
+        line3, = ax[0].plot(dataGT[key][:, 0], dataGT[key][:, 1], linewidth=3, color='blue', label='Ground Truth')
+        ax[0].set_title("Left eye")
+        ax[0].set_xlim([0, 1])
+        ax[0].set_ylim([0, 1])
+        ax[0].grid(True)
+    
+        # Right eye plot
+        ax[1].plot(dataGaze[f'R_{key}'][:, 0], dataGaze[f'R_{key}'][:, 1], '.', color='red')
+        ax[1].plot(dataGT[key][:, 0], dataGT[key][:, 1], linewidth=3, color='blue')
+        ax[1].set_xlim([0, 1])
+        ax[1].set_ylim([0, 1])
+        ax[1].grid(True)
+ 
+        # perform metrics
+        if ('Saccade' in key):
+            rmse_l = saccade_metric('L', key, dataGaze, dataGT)
+            rmse_r = saccade_metric('R', key, dataGaze, dataGT)
+            ax[0].set_title(f"Left eye\nRMSE={rmse_l}")
+            ax[1].set_title(f"Right eye\nRMSE={rmse_r}")
+        elif('Smooth' in key):
+            rmse_l, corr_l = smooth_pursuit_metric('L', key, dataGaze, dataGT)
+            rmse_r, corr_r = smooth_pursuit_metric('R', key, dataGaze, dataGT)
+            ax[0].set_title(f"Left eye\nRMSE={rmse_l} CORR={corr_l}")
+            ax[1].set_title(f"Right eye\nRMSE={rmse_r} CORR={corr_r}")
+        else:
+            ax[0].set_title(f"Left eye")
+            ax[1].set_title(f"Right eye")
+        
+    if plotPCData is True:
+        fig.legend(handles=[line1, line2, line3], loc='upper center', bbox_to_anchor=(0.5, 1.05), ncol=3)
+    else:
+        fig.legend(handles=[line2, line3], loc='upper center', bbox_to_anchor=(0.5, 1.05), ncol=2)
     if pathToSave is not None:
         plt.savefig(f"{pathToSave}/{key}.png", bbox_inches='tight', dpi=100)
     plt.close(fig)
  
-def process_excel_file(file_path, file_path_gaze, output_folder):
+def process_excel_file(file_path, file_path_gaze, output_folder, plotPCData = False):
     """
     Process the Excel file and return a dictionary indicating which buttons should be enabled.
     Handles errors if sheets are not present by setting corresponding keys to False.
@@ -261,11 +297,14 @@ def process_excel_file(file_path, file_path_gaze, output_folder):
     for sheet in sheets_to_remove:
         sheets.remove(sheet)
     # Process the data using the full paths
-    dataPC = process_participant_data(file_path, sheets)
+    if plotPCData is True:
+        dataPC = process_participant_data(file_path, sheets)
+    else:
+        dataPC = None
     dataGaze = process_gaze_data(file_path, sheets)
     dataGT = process_ground_truth_data(file_path_gaze, sheets)
  
     for sheet in sheets:
-        eye_data_to_image(dataPC, dataGaze, dataGT, sheet, sheet, output_folder)
+        eye_data_to_image(dataPC, dataGaze, dataGT, sheet, sheet, output_folder, plotPCData)
  
     return enabled_buttons
