@@ -237,7 +237,7 @@ class Application(tk.Tk):
         Create the array of routines selected for the current sequence of vision tests
         '''
         # Bring calibration window to the forefront
-        self.activate_gazepoint()
+        activate_gazepoint(self.gazepoint_window)
 
         while gw.getActiveWindowTitle() == "Gazepoint Control x64" and not None:
             sleep(10e-2)
@@ -276,25 +276,30 @@ class Application(tk.Tk):
             self.test_routine.current_test = next(self.test_routine.test_names)
             self.test_routine.state = Routine_State.update_test
 
-    def activate_gazepoint(self):
-        # Check if window was accidentally closed
-        self.gazepoint_window = None if "Gazepoint Control x64" not in gw.getAllTitles() else self.gazepoint_window
+def activate_gazepoint(window='empty'):
+    # Check if window was accidentally closed
+    gazepoint_window = None if "Gazepoint Control x64" not in gw.getAllTitles() else window
 
-        try:
-            if self.gazepoint_window is None:
-                os.startfile('C:/Program Files (x86)/Gazepoint/Gazepoint/bin64/Gazepoint.exe')
-                sleep(2)
-                self.gazepoint_window = gw.getWindowsWithTitle("Gazepoint")[0]
-            else:
-                self.gazepoint_window.activate()
-                sleep(0.2)
-        except:
-            traceback.print_exc()
+    try:
+        if gazepoint_window is None:
+            os.startfile('C:/Program Files (x86)/Gazepoint/Gazepoint/bin64/Gazepoint.exe')
+            sleep(2)
+            gazepoint_window = gw.getWindowsWithTitle("Gazepoint")[0]
+        elif gazepoint_window == 'empty':
+            gazepoint_window = gw.getWindowsWithTitle("Gazepoint")[0]
+            gazepoint_window.activate()
+        else:
+            gazepoint_window.activate()
+        sleep(0.2)
+    except:
+        traceback.print_exc()
+    return gazepoint_window
 
 if __name__ == '__main__':
+
     # Start Gazepoint Control
     try:
-        os.startfile('C:/Program Files (x86)/Gazepoint/Gazepoint/bin64/Gazepoint.exe')
+        activate_gazepoint()
         sleep(2)
     except:
         traceback.print_exc()
