@@ -11,6 +11,7 @@ from tkinter import ttk
 from tkinter.messagebox import *
 import os
 from processing import process_excel_file
+from images_to_pdf import images_to_pdf
 import threading
 
 class Home_Screen(tk.Frame):
@@ -126,11 +127,15 @@ class Results_Frame(tk.Frame):
         self.input_directory = input_directory
         self.configure(bg="white")
 
+        self.enabled_buttons = {}
+        self.image_paths = []
+        self.file_name = ''
+
         # Dropdown to select Excel file
         self.file_label = tk.Label(self, text="Select Excel File:", bg="white")
         self.file_label.grid(row=0, column=0, padx=10, pady=10, sticky="w")
         
-        self.file_dropdown = ttk.Combobox(self)
+        self.file_dropdown = ttk.Combobox(self, state="readonly")
         self.file_dropdown['values'] = self.get_excel_files()
         self.file_dropdown.grid(row=0, column=1, padx=10, pady=10, sticky="w")
 
@@ -138,20 +143,29 @@ class Results_Frame(tk.Frame):
         self.confirm_button = tk.Button(self, text="Confirm", command=self.confirm_file_selection)
         self.confirm_button.grid(row=0, column=2, padx=10, pady=10, sticky="w")
 
-        # Buttons for different result types (initially disabled)
-        self.VS_button = tk.Button(self, text='Vertical Saccade', command=self.show_vertical_saccade, state='disabled')
-        self.HS_button = tk.Button(self, text='Horizontal Saccade', command=self.show_horizontal_saccade, state='disabled')
-        self.SC_button = tk.Button(self, text='Smooth Circle', command=self.show_smooth_circle, state='disabled')
-        self.SV_button = tk.Button(self, text='Smooth Vertical', command=self.show_smooth_vertical, state='disabled')
-        self.SH_button = tk.Button(self, text='Smooth Horizontal', command=self.show_smooth_horizontal, state='disabled')
-        self.TR_button = tk.Button(self, text='Text Reading', command=self.show_text_reading, state='disabled')
+        # button to export results to pdf
+        self.to_pdf_button = tk.Button(self, text="Export to PDF", 
+                                       command=lambda: images_to_pdf(self.image_paths, f"{self.input_directory}/{self.file_name}.pdf", self.file_name), state='disabled')
+        self.to_pdf_button.grid(row=0, column=3, padx=10, pady=10, sticky="w")
 
-        self.VS_button.grid(row=1, column=0, padx=10, pady=5)
-        self.HS_button.grid(row=2, column=0, padx=10, pady=5)
-        self.SC_button.grid(row=3, column=0, padx=10, pady=5)
-        self.SV_button.grid(row=4, column=0, padx=10, pady=5)
-        self.SH_button.grid(row=5, column=0, padx=10, pady=5)
-        self.TR_button.grid(row=6, column=0, padx=10, pady=5)
+
+        # Buttons for different result types (initially disabled)
+        self.buttons_grid = ttk.Frame(self)
+        self.VS_button = tk.Button(self.buttons_grid, text='Vertical Saccade', command=self.show_vertical_saccade, state='disabled')
+        self.HS_button = tk.Button(self.buttons_grid, text='Horizontal Saccade', command=self.show_horizontal_saccade, state='disabled')
+        self.SC_button = tk.Button(self.buttons_grid, text='Smooth Circle', command=self.show_smooth_circle, state='disabled')
+        self.SV_button = tk.Button(self.buttons_grid, text='Smooth Vertical', command=self.show_smooth_vertical, state='disabled')
+        self.SH_button = tk.Button(self.buttons_grid, text='Smooth Horizontal', command=self.show_smooth_horizontal, state='disabled')
+        self.TR_button = tk.Button(self.buttons_grid, text='Text Reading', command=self.show_text_reading, state='disabled')
+
+        self.VS_button.grid(row=0, column=0, padx=10, pady=5, sticky='ew') # fill vertically
+        self.HS_button.grid(row=1, column=0, padx=10, pady=5, sticky='ew')
+        self.SC_button.grid(row=2, column=0, padx=10, pady=5, sticky='ew')
+        self.SV_button.grid(row=3, column=0, padx=10, pady=5, sticky='ew')
+        self.SH_button.grid(row=4, column=0, padx=10, pady=5, sticky='ew')
+        self.TR_button.grid(row=5, column=0, padx=10, pady=5, sticky='ew')
+
+        self.buttons_grid.grid(row=1,column=0,padx=10, pady=10)
 
         # Canvas to display results
         self.result_canvas = tk.Canvas(self, bg="gray")
@@ -159,7 +173,7 @@ class Results_Frame(tk.Frame):
 
         # Exit button to go back to home screen
         self.exit_button = tk.Button(self, text="Exit", command=self.exit_results)
-        self.exit_button.grid(row=7, column=0, columnspan=2, pady=10)
+        self.exit_button.grid(row=7, column=0, columnspan=3, padx=20, pady=10, sticky="ew")
 
         # Configure row and column weights
         self.grid_rowconfigure(1, weight=1)
@@ -177,7 +191,6 @@ class Results_Frame(tk.Frame):
         """Retrieve a list of Excel files from the input directory."""
         return [f for f in os.listdir(self.input_directory) if f.endswith('.xlsx') and not f.endswith('_GT.xlsx')]
 
-
     def confirm_file_selection(self):
         """Process the selected Excel file and enable buttons based on data availability."""
         selected_file = self.file_dropdown.get()
@@ -185,8 +198,8 @@ class Results_Frame(tk.Frame):
             return
 
         file_path = os.path.join(self.input_directory, selected_file)
-        file_name, file_extension = os.path.splitext(selected_file)
-        file_name_gt = file_name + '_GT' + file_extension
+        self.file_name, file_extension = os.path.splitext(selected_file)
+        file_name_gt = self.file_name + '_GT' + file_extension
         file_path_gt = os.path.join(self.input_directory, file_name_gt)
         self.start_processing(file_path, file_path_gt)
 
@@ -204,10 +217,11 @@ class Results_Frame(tk.Frame):
         def thread_function():
             nonlocal file_path, file_path_gt
             # Process the file in the background
-            enabled_buttons = process_excel_file(file_path, file_path_gt, self.input_directory)
+            self.enabled_buttons = process_excel_file(file_path, file_path_gt, self.input_directory)
+            self.image_paths = [f"{self.input_directory}/{sheet}.png" for sheet in self.enabled_buttons.keys() if self.enabled_buttons[sheet] == True]
             
             # Now that processing is done, use `after` to safely update the canvas in the main thread
-            self.result_canvas.after(0, self.update_canvas_with_file_results, enabled_buttons)
+            self.result_canvas.after(0, self.update_canvas_with_file_results)
 
         # Display "Processing file..." immediately
         self.animate_text = True
@@ -218,7 +232,7 @@ class Results_Frame(tk.Frame):
         thread = threading.Thread(target=thread_function)
         thread.start()
 
-    def update_canvas_with_file_results(self, enabled_buttons):
+    def update_canvas_with_file_results(self):
         # delete prev text
         self.animate_text = False
         self.animate_counter = 0
@@ -226,15 +240,17 @@ class Results_Frame(tk.Frame):
         self.result_canvas.create_text(self.result_canvas.winfo_width() // 2, self.result_canvas.winfo_height() // 2, text=f"Processing complete!~", font=("Helvetica", 16))
         
         # Enable buttons based on the result of file processing
-        self.VS_button.config(state='normal' if enabled_buttons.get('Vertical_Saccade') else 'disabled')
-        self.HS_button.config(state='normal' if enabled_buttons.get('Horizontal_Saccade') else 'disabled')
-        self.SC_button.config(state='normal' if enabled_buttons.get('Smooth_Circle') else 'disabled')
-        self.SV_button.config(state='normal' if enabled_buttons.get('Smooth_Vertical') else 'disabled')
-        self.SH_button.config(state='normal' if enabled_buttons.get('Smooth_Horizontal') else 'disabled')
-        self.TR_button.config(state='normal' if enabled_buttons.get('Text_Reading') else 'disabled')
+        if any(self.enabled_buttons.values()):
+            self.to_pdf_button.config(state='normal')
+        self.VS_button.config(state='normal' if self.enabled_buttons.get('Vertical_Saccade') else 'disabled')
+        self.HS_button.config(state='normal' if self.enabled_buttons.get('Horizontal_Saccade') else 'disabled')
+        self.SC_button.config(state='normal' if self.enabled_buttons.get('Smooth_Circle') else 'disabled')
+        self.SV_button.config(state='normal' if self.enabled_buttons.get('Smooth_Vertical') else 'disabled')
+        self.SH_button.config(state='normal' if self.enabled_buttons.get('Smooth_Horizontal') else 'disabled')
+        self.TR_button.config(state='normal' if self.enabled_buttons.get('Text_Reading') else 'disabled')
 
         # Display message if no data is available
-        if not any(enabled_buttons.values()):
+        if not any(self.enabled_buttons.values()):
             self.result_canvas.create_text(self.result_canvas.winfo_width() // 2, self.result_canvas.winfo_height() // 2, text="No data present", fill="black", font=("Helvetica", 16))
 
     def show_vertical_saccade(self):

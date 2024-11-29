@@ -247,7 +247,6 @@ class Test_Routine:
         wrapped_text, font_size = self.wrap_text(text, max_width, max_height, min_font_size)
         self.generate_gtdata_for_text(wrapped_text, font_size)
 
-        retry_time = 5000
         # Update the font of countdown_text to the calculated font size
         self.canvas.itemconfig(self.countdown_text, font=("Arial", font_size, "bold"))
 

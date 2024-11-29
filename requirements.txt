@@ -5,3 +5,4 @@ PyGetWindow==0.0.9
 openpyxl==3.1.5
 pyyaml==6.0.2
 matplotlib==3.9.2
+fpdf==1.7.2
