@@ -62,9 +62,9 @@ class EyeTracker_DM(EyeTracker):
             if self.read_msg_async() is None:
                 break
 
-        self.tracker_data = self.serialize_tracker_data(self.tracker_data)
-        self.dfs[self.master.current_test]=pd.DataFrame(self.tracker_data)
         if self.master.current_test != "Done":
+            self.tracker_data = self.serialize_tracker_data(self.tracker_data)
+            self.dfs[self.master.current_test]=pd.DataFrame(self.tracker_data)
             self.GT_dfs[self.master.current_test]=pd.DataFrame(self.master.GTdata[self.master.current_test])
 
     def serialize_tracker_data(self, data: list[tuple[float, str, dict[str, str]]]) -> str:
@@ -114,3 +114,4 @@ class EyeTracker_DM(EyeTracker):
         with pd.ExcelWriter(f"{path}/{self.master.participant_name}.xlsx") as writer:
             for key in self.dfs.keys():
                 self.dfs[key].to_excel(writer, sheet_name=key)
+        self.dfs = {} # reset once exporting

@@ -54,7 +54,11 @@ class Test_Routine:
                 self.master.routine_finished()
                 if self.collect_data:
                     try:
-                        self.tracker.export_data()
+                        # run on thread so we dont stare at screen for 5 sec
+                        thread = threading.Thread(target=self.tracker.export_data)
+                        thread.daemon = True
+                        thread.start()
+                        # self.tracker.export_data
                     except:
                         traceback.print_exc()
                 self.cancel()
@@ -86,7 +90,6 @@ class Test_Routine:
                             self.GTdata[self.current_test]["X"].append(sac_coords[1][0])
                             self.GTdata[self.current_test]["Y"].append(sac_coords[0][1])
                             self.GTdata[self.current_test]["Y"].append(sac_coords[1][1])
-                            print(self.GTdata[self.current_test])
 
         elif self.state == Routine_State.countdown:
             if "Text" not in self.current_test:
@@ -445,7 +448,7 @@ class Test_Routine:
         return top_ball_colour, bottom_ball_colour
 
     def variable_reset(self):
-        self.tracker.dfs = {}
+        # self.tracker.dfs = {} - this is done in eyetracker.py export_data now
         self.left_eye_pog = [0, 0]
         self.right_eye_pog = [0, 0]
 
