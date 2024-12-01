@@ -249,7 +249,11 @@ class Application(tk.Tk):
                 participant_name = "Sample_Participant"
 
             # Activate EYEfollow window
-            self.EYEfollow_window.activate()
+            self.EYEfollow_window = gw.getWindowsWithTitle(window_title)[0]
+            try:
+                self.EYEfollow_window.activate()
+            except Exception as e:
+                print(f"Error switching back to eyefollow window: {e}")
 
             # Hide mouse
             self.config(cursor="none")
