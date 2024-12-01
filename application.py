@@ -18,7 +18,7 @@ import pygetwindow as gw
 import tkinter as tk
 from tkinter.constants import CENTER
 from tkinter.messagebox import *
-from tkinter.simpledialog import askstring
+from custom_tk import custom_askstring
 
 # Project Imports
 from testroutine import Test_Routine, Routine_State
@@ -234,9 +234,10 @@ class Application(tk.Tk):
         while gw.getActiveWindowTitle() == "Gazepoint Control x64" and not None:
             sleep(10e-2)
 
+        invalid_windows_file_characters = ['/','\\',':','*','?','"','<','>','|']
         # Get participant's name
         if self.ignore_popup is not True:
-            participant_name = askstring("Input Name", f"Input Participant's Name{30*' '}")
+            participant_name = custom_askstring("Input Name", f"Input Participant's Name{30*' '}", self, invalid_windows_file_characters)
         else:
             participant_name = ''
 
