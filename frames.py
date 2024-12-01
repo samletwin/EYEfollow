@@ -100,7 +100,7 @@ class Home_Screen(tk.Frame):
             elif button_name == "Smooth_Vertical":
                 self.SV_b.configure(bg="white")
             elif button_name == "Smooth_Horizontal":
-                self.SH_b.configure(bg="#white")
+                self.SH_b.configure(bg="white")
             elif button_name == "Text_Reading":
                 self.TR_b.configure(bg="white")
 
