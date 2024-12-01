@@ -253,13 +253,23 @@ def eye_data_to_image(dataPC, dataGaze, dataGT, key, title, pathToSave=None, plo
  
         # perform metrics
         if ('Saccade' in key):
-            rmse_l = saccade_metric('L', key, dataGaze, dataGT)
-            rmse_r = saccade_metric('R', key, dataGaze, dataGT)
+            try:
+                rmse_l = saccade_metric('L', key, dataGaze, dataGT)
+                rmse_r = saccade_metric('R', key, dataGaze, dataGT)
+            except Exception as e:
+                print(f"Error computing metric: {e}")
+                rmse_l = "Error"
+                rmse_r = "Error"
             ax[0].set_title(f"Left eye\nRMSE={rmse_l}")
             ax[1].set_title(f"Right eye\nRMSE={rmse_r}")
         elif('Smooth' in key):
-            rmse_l, corr_l = smooth_pursuit_metric('L', key, dataGaze, dataGT)
-            rmse_r, corr_r = smooth_pursuit_metric('R', key, dataGaze, dataGT)
+            try:
+                rmse_l, corr_l = smooth_pursuit_metric('L', key, dataGaze, dataGT)
+                rmse_r, corr_r = smooth_pursuit_metric('R', key, dataGaze, dataGT)
+            except Exception as e:
+                print(f"Error computing metric: {e}")
+                rmse_l, corr_l = "Error","Error"
+                rmse_r, corr_r = "Error","Error"
             ax[0].set_title(f"Left eye\nRMSE={rmse_l} CORR={corr_l}")
             ax[1].set_title(f"Right eye\nRMSE={rmse_r} CORR={corr_r}")
         else:
