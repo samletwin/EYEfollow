@@ -184,7 +184,7 @@ def process_ground_truth_data(file_path, sheets):
  
     return gt_data
  
-def eye_data_to_image(dataPC, dataGaze, dataGT, key, title, pathToSave=None, plotPCData = False):
+def eye_data_to_image(dataPC, dataGaze, dataGT, key, title, pathToSave=None, plotPCData=False, text=''):
     """
     Plots data for the left and right eye based on the provided data.
     """
@@ -237,8 +237,8 @@ def eye_data_to_image(dataPC, dataGaze, dataGT, key, title, pathToSave=None, plo
         plt.suptitle(title)
     
         # Left eye plot
+        lines = []
         line2, = ax[0].plot(dataGaze[f'L_{key}'][:, 0], dataGaze[f'L_{key}'][:, 1], '.', color='red', label='Gaze')
-        line3, = ax[0].plot(dataGT[key][:, 0], dataGT[key][:, 1], linewidth=3, color='blue', label='Ground Truth')
         ax[0].set_title("Left eye")
         ax[0].set_xlim([0, 1])
         ax[0].set_ylim([0, 1])
@@ -246,11 +246,36 @@ def eye_data_to_image(dataPC, dataGaze, dataGT, key, title, pathToSave=None, plo
     
         # Right eye plot
         ax[1].plot(dataGaze[f'R_{key}'][:, 0], dataGaze[f'R_{key}'][:, 1], '.', color='red')
-        ax[1].plot(dataGT[key][:, 0], dataGT[key][:, 1], linewidth=3, color='blue')
         ax[1].set_xlim([0, 1])
         ax[1].set_ylim([0, 1])
         ax[1].grid(True)
  
+        lines.append(line2)
+        if (key == 'Text_Reading'):
+            text_lines = text.split("\n")
+            for i, axis in enumerate(ax[:2]):  # Only iterate over the first two axes
+                x_gt = dataGT[key][:, 0]
+                y_gt = dataGT[key][:, 1]
+
+                for idx, (x, y) in enumerate(zip(x_gt, y_gt)):
+                    if idx < len(text_lines):  # Only plot text if there’s a corresponding line
+                        line_text = text_lines[idx]
+                    else:
+                        line_text = ""  # Leave empty if no text is available
+
+                    bbox = axis.get_window_extent()
+                    axis_width = bbox.width
+                    axis_height = bbox.height
+
+                    # Dynamically calculate font size based on plot area and text length
+                    font_size = min(axis_width / 10, axis_height / 20)
+                    axis.text(x, y, line_text, fontsize=font_size, color='blue', ha='center', va='center', weight='bold')
+        else:
+            line3, = ax[0].plot(dataGT[key][:, 0], dataGT[key][:, 1], linewidth=3, color='blue', label='Ground Truth')
+            lines.append(line3)
+            ax[1].plot(dataGT[key][:, 0], dataGT[key][:, 1], linewidth=3, color='blue')
+
+
         # perform metrics
         if ('Saccade' in key):
             try:
@@ -279,7 +304,7 @@ def eye_data_to_image(dataPC, dataGaze, dataGT, key, title, pathToSave=None, plo
     if plotPCData is True:
         fig.legend(handles=[line1, line2, line3], loc='upper center', bbox_to_anchor=(0.5, 1.05), ncol=3)
     else:
-        fig.legend(handles=[line2, line3], loc='upper center', bbox_to_anchor=(0.5, 1.05), ncol=2)
+        fig.legend(handles=lines, loc='upper center', bbox_to_anchor=(0.5, 1.05), ncol=2)
     if pathToSave is not None:
         plt.savefig(f"{pathToSave}/{key}.png", bbox_inches='tight', dpi=100)
     plt.close(fig)
@@ -314,7 +339,8 @@ def process_excel_file(file_path, file_path_gaze, output_folder, plotPCData = Fa
     dataGaze = process_gaze_data(file_path, sheets)
     dataGT = process_ground_truth_data(file_path_gaze, sheets)
  
+    text = "Hello\nTest\nHi"
     for sheet in sheets:
-        eye_data_to_image(dataPC, dataGaze, dataGT, sheet, sheet, output_folder, plotPCData)
+        eye_data_to_image(dataPC, dataGaze, dataGT, sheet, sheet, output_folder, plotPCData, text)
  
     return enabled_buttons

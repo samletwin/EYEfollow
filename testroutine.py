@@ -128,68 +128,14 @@ class Test_Routine:
         grade_data = config.get_grade_data(level)
         test_config = config.get_text_test_config()
 
-        self.canvas.itemconfig(self.countdown_text, state='normal')
-        self.canvas.itemconfig(self.ball, state='hidden')
-        self.canvas.itemconfig(self.saccade_ball, state='hidden')
-
-        self.GTdata[self.current_test] = {"X": [], "Y": []}  # gt data is filled in display_text
         self.display_text(grade_data.message, test_config.minimum_font_size,
                         test_config.padding_hor_px, test_config.padding_ver_px)
+
         self.tracker.start_collection()
 
-        # Bind key press event to stop the tracking and ask questions
-        self.master.bind("<KeyPress>", lambda event: self.show_questions_on_canvas(grade_data.questions))
+        # Once text is read, switch to the questions frame
+        self.master.show_questions(grade_data.questions)
 
-        # Start a separate thread for continuous tracking
-        self.stop_tracking_event = threading.Event()
-        tracking_thread = threading.Thread(target=self.track_user_reading)
-        tracking_thread.daemon = True
-        tracking_thread.start()
-
-    def show_questions_on_canvas(self, questions):
-        self.canvas.delete("all")  # Clear previous content on canvas
-        self.canvas.config(cursor='arrow')
-        y_offset = 50  # Start position for questions
-        self.user_answers = []  # Store user answers
-
-        for i, question in enumerate(questions):
-            question_text = question["message"]
-            options = question["options"]
-            correct_answer = question["answer"]
-
-            question_id = self.canvas.create_text(50, y_offset, anchor="nw", text=f"Q{i+1}: {question_text}", font=("Arial", 16, "bold"))
-            y_offset += 30 
-            radio_var = tk.StringVar(value="")  
-            for option in options:
-                option_button = tk.Radiobutton(self.master, text=option, variable=radio_var, value=option, 
-                                               command=lambda opt=option, var=radio_var: self.store_answer(var, opt, i))
-                option_window = self.canvas.create_window(50, y_offset, anchor="nw", window=option_button)
-                y_offset += 25  
-
-            self.user_answers.append((radio_var, correct_answer))
-            y_offset += 20  # Additional space between questions
-
-        submit_button = tk.Button(self.master, text="Submit Answers", command=self.submit_answers)
-        self.canvas.create_window(50, y_offset, anchor="nw", window=submit_button)
-
-    def store_answer(self, radio_var, option, question_index):
-        self.user_answers[question_index] = (radio_var, option)
-
-    def submit_answers(self):
-        y_offset = 50  # Reset y_offset to display results below questions
-        self.canvas.delete("all")
-
-        for i, (radio_var, correct_answer) in enumerate(self.user_answers):
-            user_answer = radio_var.get()
-            result_text = f"Q{i+1}: {'Correct' if user_answer == correct_answer else 'Incorrect'}"
-            result_text += f" (Your Answer: {user_answer}, Correct Answer: {correct_answer})"
-            result_color = "green" if user_answer == correct_answer else "red"
-            self.canvas.create_text(50, y_offset, anchor="nw", text=result_text, fill=result_color, font=("Arial", 16))
-            y_offset += 30  # Space between each result
-
-        # Display a retry button for reattempting the questions
-        retry_button = tk.Button(self.master, text="Retry", command=self.reading_main)
-        self.canvas.create_window(50, y_offset + 20, anchor="nw", window=retry_button)
 
     def track_user_reading(self):
         while not self.stop_tracking_event.is_set():
@@ -268,6 +214,16 @@ class Test_Routine:
 
         type_text()
 
+    def transition_to_next_test(self):
+        # Transition to the next test in the sequence or the main screen
+        self.state = Routine_State.update_test
+        self.current_test = next(self.test_names, "Done")
+        if self.current_test == "Done":
+            # If no more tests are remaining, display the main screen
+            self.master.routine_finished()
+        else:
+            # Start the next test
+            self.main_function()
     
     def generate_gtdata_for_text(self, text, font_size):
         # Split the wrapped text into lines
@@ -284,6 +240,8 @@ class Test_Routine:
                 x_last = bbox[2]
 
                 # Store GTData for each line
+                if self.current_test not in self.GTdata.keys():
+                    self.GTdata[self.current_test] = {"X": [], "Y": [], "Time": []}
                 self.GTdata[self.current_test]["X"].append(x_first)
                 self.GTdata[self.current_test]["X"].append(x_last)
                 self.GTdata[self.current_test]["X"].append("NaN") # using NaN to distinguish between lines of text

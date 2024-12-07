@@ -119,7 +119,74 @@ class Home_Screen(tk.Frame):
         self.SH_b.configure(bg="white")
         self.TR_b.configure(bg="white")
         self.start_b.configure(state="disabled", bg="#eee")
-        
+
+class QuestionsFrame(tk.Frame):
+    """
+    Frame to display questions and collect answers.
+    """
+    def __init__(self, master, controller, questions):
+        super().__init__(master)
+        self.controller = controller
+        self.questions = questions
+        self.user_answers = []
+        self.configure(bg="white")
+        self.grid_columnconfigure(0, weight=1)
+        self.create_question_widgets()
+
+    def create_question_widgets(self):
+        self.configure(cursor='arrow')
+        screen_height = self.winfo_screenheight()
+        question_height = 100  # Approximate height per question block (text + options)
+        max_questions_per_column = screen_height // question_height
+        current_column = 0
+        current_row = 0
+
+        for i, question in enumerate(self.questions):
+            if current_row >= max_questions_per_column:
+                current_column += 1
+                current_row = 0
+
+            question_text = question["message"]
+            options = question["options"]
+
+            # Display question text
+            tk.Label(
+                self, text=f"Q{i+1}: {question_text}", font=("Arial", 16, "bold"), bg="white", wraplength=300
+            ).grid(row=current_row, column=current_column, padx=20, pady=10, sticky="w")
+            current_row += 1
+
+            # Create radio buttons for each option
+            radio_var = tk.StringVar(value="")
+            self.user_answers.append((radio_var, question["answer"]))
+
+            for option in options:
+                tk.Radiobutton(
+                    self, text=option, variable=radio_var, value=option, bg="white",
+                    font=("Arial", 14), cursor="arrow"
+                ).grid(row=current_row, column=current_column, padx=40, pady=5, sticky="w")
+                current_row += 1
+
+            # Add some space between questions
+            current_row += 1
+
+        # Submit button (placed below the last column)
+        tk.Button(self, text="Submit", command=self.submit_answers, bg="#adffab", cursor="arrow").grid(
+            row=max(current_row, max_questions_per_column), column=current_column, pady=20)
+
+    def submit_answers(self):
+        results = []
+        for i, (radio_var, correct_answer) in enumerate(self.user_answers):
+            user_answer = radio_var.get()
+            is_correct = user_answer == correct_answer
+            results.append({
+                "question": self.questions[i]["message"],
+                "user_answer": user_answer,
+                "correct_answer": correct_answer,
+                "is_correct": is_correct
+            })
+        self.controller.handle_question_results(results)
+
+
 class Results_Frame(tk.Frame):
     def __init__(self, master, controller, input_directory):
         super().__init__(master)
