@@ -1,33 +1,32 @@
-test_params:
-    Vertical_Saccade: 
-        Duration: 10     # s
-        Frequency: 1     # Hz
-        Instruction: Look back and forth between\ndots as fast as possible
-    Horizontal_Saccade: 
-        Duration: 10 
-        Frequency: 1
-        Instruction: Look back and forth between\ndots as fast as possible
-    Smooth_Circle: 
-        Duration: 16 
-        Frequency: 0.125
-        Instruction: Follow the dot
-    Smooth_Vertical: 
-        Duration: 22.5
-        Frequency: 0.144
-        Instruction: Follow the dot
-    Smooth_Horizontal: 
-        Duration: 27
-        Frequency: 0.074
-        Instruction: Follow the dot
-    Text_Reading: 
-        Minimum_Font_Size: 20
-        Padding_Horizontal_Px: 200
-        Padding_Vertical_Px: 500
-    
-test_config:
-    draw_refresh_rate_ms: 5          
-    countdown_duration_s: 3          
-    state_machine_cycle_ms: 100          
-    ball_radius_px: 12
 general_config:
-    data_output_path: "./output"
+  data_output_path: ./output
+test_config:
+  ball_radius_px: 12
+  countdown_duration_s: 3
+  draw_refresh_rate_ms: 5
+  state_machine_cycle_ms: 100
+test_params:
+  Horizontal_Saccade:
+    Duration: 10
+    Frequency: 1
+    Instruction: Look back and forth between dots as fast as possible
+  Smooth_Circle:
+    Duration: 16
+    Frequency: 0.125
+    Instruction: Follow the dot
+  Smooth_Horizontal:
+    Duration: 27
+    Frequency: 0.074
+    Instruction: Follow the dot
+  Smooth_Vertical:
+    Duration: 22.5
+    Frequency: 0.144
+    Instruction: Follow the dot
+  Text_Reading:
+    Minimum_Font_Size: 20
+    Padding_Horizontal_Px: 200
+    Padding_Vertical_Px: 500
+  Vertical_Saccade:
+    Duration: 10
+    Frequency: 1
+    Instruction: Look back and forth between dots as fast as possible
