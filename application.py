@@ -232,7 +232,7 @@ class Application(tk.Tk):
         # Display results or move to the next test
         for result in results:
             print(f"Q: {result['question']}, User: {result['user_answer']}, Correct: {result['correct_answer']}, Result: {'Correct' if result['is_correct'] else 'Incorrect'}")
-        self.test_routine.transition_to_next_test()
+        self.test_routine.transition_to_next_test(results)
 
     def show_results(self):
         """

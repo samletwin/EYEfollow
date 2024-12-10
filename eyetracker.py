@@ -65,7 +65,7 @@ class EyeTracker_DM(EyeTracker):
         if self.master.current_test != "Done":
             self.tracker_data = self.serialize_tracker_data(self.tracker_data)
             self.dfs[self.master.current_test]=pd.DataFrame(self.tracker_data)
-            self.GT_dfs[self.master.current_test]=pd.DataFrame(self.master.GTdata[self.master.current_test])
+            self.GT_dfs[self.master.current_test]=pd.DataFrame(dict([(k, pd.Series(v)) for k, v in self.master.GTdata[self.master.current_test].items()])) #handles arrays of diff length
 
     def serialize_tracker_data(self, data: list[tuple[float, str, dict[str, str]]]) -> str:
         '''
@@ -106,6 +106,9 @@ class EyeTracker_DM(EyeTracker):
         path = self.master.master.path
         if not os.path.exists(path):
             os.makedirs(path)
+
+        #TODO: fix this  
+        self.GT_dfs["Text_Reading"]=pd.DataFrame(dict([(k, pd.Series(v)) for k, v in self.master.GTdata["Text_Reading"].items()])) #handles arrays of diff length
         
         with pd.ExcelWriter(f"{path}/{self.master.participant_name}_GT.xlsx") as writer:
             for key in self.master.GTdata.keys():

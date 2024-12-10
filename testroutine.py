@@ -151,15 +151,19 @@ class Test_Routine:
         self.tracker.stop_collection()
         self.master.show_questions(self.grade_data.questions)
 
-    def transition_to_next_test(self):
+    def transition_to_next_test(self, results):
         # Transition to the next test in the sequence or the main screen
+        for result in results:
+            self.GTdata[self.current_test]["question"].append(result['question'])
+            self.GTdata[self.current_test]["user_answer"].append(result['user_answer'])
+            self.GTdata[self.current_test]["correct_answer"].append(result['correct_answer'])
         self.state = Routine_State.update_test
         self.current_test = next(self.test_names, "Done")
 
     def track_user_reading(self):
         while not self.stop_tracking_event.is_set():
             self.send_tracker_message()
-            sleep(0.02) # Adjust the frequency of tracking messages as needed
+            sleep(0.1) # Adjust the frequency of tracking messages as needed
         
     def wrap_text(self, text: str, max_width, max_height, min_font_size=20):
         font_size = 100  # Starting font size
@@ -238,7 +242,9 @@ class Test_Routine:
         lines = text.split("\n")
         # font_height = font.Font(family='Arial',size=font_size,weight='bold').metrics('linespace')
         font_height = font_size
-        self.GTdata[self.current_test] = {"X": [], "Y": []}
+        self.GTdata[self.current_test] = {"X": [], "Y": [], 
+            "Text": [text], "Font_Size": [font_size], 
+            "question": [], "user_answer": [], "correct_answer":[]}
 
         for i, line in enumerate(lines):
             # Get bounding box for the first and last character of the line
@@ -252,10 +258,8 @@ class Test_Routine:
                 self.GTdata[self.current_test]["X"].append(x_first)
                 self.GTdata[self.current_test]["X"].append(x_last)
                 self.GTdata[self.current_test]["X"].append("NaN") # using NaN to distinguish between lines of text
-                
             # Remove the temporary text object
             self.canvas.delete(temp_text_id)
-        
         # get y data
         if len(lines) % 2 == 0: #even
             lolz = int(len(lines)/2)
