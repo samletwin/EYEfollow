@@ -22,7 +22,7 @@ from custom_tk import custom_askstring
 
 # Project Imports
 from testroutine import Test_Routine, Routine_State
-from frames import Home_Screen, Test_Routine_Canvas, Results_Frame
+from frames import Home_Screen, Test_Routine_Canvas, Results_Frame, QuestionsFrame
 from config import load_config_files, get_data_output_path
 
 # Set resolution for screen
@@ -30,7 +30,6 @@ ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
 # Window title
 window_title = "EYEfollow, 2024"
-
 class Application(tk.Tk):
 
     class CURRENT_FRAME(Enum):
@@ -38,6 +37,7 @@ class Application(tk.Tk):
         EYE_TEST  = 2
         COUNTDOWN = 3
         RESULTS   = 4
+        QUESTIONS = 5
     
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
@@ -215,6 +215,24 @@ class Application(tk.Tk):
             self.activeButtons[key] = False
         
         self.frame.reset_buttons()
+    
+    def show_questions(self, questions):
+        """
+        Switch to the QuestionsFrame to display questions.
+        """
+        self.questions_frame = QuestionsFrame(master=self.container, controller=self, questions=questions)
+        self.questions_frame.grid(row=0, column=0, sticky="nsew")
+        self.questions_frame.tkraise()
+        self.current_frame = self.CURRENT_FRAME.QUESTIONS
+
+    def handle_question_results(self, results):
+        """
+        Handle results after questions are answered.
+        """
+        # Display results or move to the next test
+        for result in results:
+            print(f"Q: {result['question']}, User: {result['user_answer']}, Correct: {result['correct_answer']}, Result: {'Correct' if result['is_correct'] else 'Incorrect'}")
+        self.test_routine.transition_to_next_test()
 
     def show_results(self):
         """
@@ -272,6 +290,10 @@ class Application(tk.Tk):
             self.test_routine.test_names = iter(tests)
             self.test_routine.current_test = next(self.test_routine.test_names)
             self.test_routine.state = Routine_State.update_test
+    
+    def show_test_routine_canvas(self):
+        self.show_canvas(self.test_routine_canvas, self.CURRENT_FRAME.EYE_TEST)
+
 
 def activate_gazepoint(window='empty'):
     # Check if window was accidentally closed
