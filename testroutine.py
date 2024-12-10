@@ -122,25 +122,44 @@ class Test_Routine:
         self.move_ball_ref = self.canvas.after(state_machine_cycle, self.main_function)
 
     def reading_main(self):
+        self.canvas.itemconfig(self.countdown_text, state='hidden')
         self.time_ref = time()
         self.start_countdown = 1
         level = simpledialog.askinteger("Input", "Enter the level of difficulty (1-10):", minvalue=1, maxvalue=10)
-        grade_data = config.get_grade_data(level)
+        self.grade_data = config.get_grade_data(level)
         test_config = config.get_text_test_config()
 
-        self.display_text(grade_data.message, test_config.minimum_font_size,
+        self.canvas.itemconfig(self.ball, state='hidden')
+        self.canvas.itemconfig(self.saccade_ball, state='hidden')
+
+        self.display_text(self.grade_data.message, test_config.minimum_font_size,
                         test_config.padding_hor_px, test_config.padding_ver_px)
-
+        self.canvas.itemconfig(self.countdown_text, state='normal')
+        
         self.tracker.start_collection()
+        self.master.bind("<KeyPress>", lambda event: self.reading_finished())
 
-        # Once text is read, switch to the questions frame
-        self.master.show_questions(grade_data.questions)
+        # Start a separate thread for continuous tracking
+        self.stop_tracking_event = threading.Event()
+        tracking_thread = threading.Thread(target=self.track_user_reading)
+        tracking_thread.daemon = True
+        tracking_thread.start()
 
+    def reading_finished(self):
+        # stop tracker collection
+        self.stop_tracking_event.clear()
+        self.tracker.stop_collection()
+        self.master.show_questions(self.grade_data.questions)
+
+    def transition_to_next_test(self):
+        # Transition to the next test in the sequence or the main screen
+        self.state = Routine_State.update_test
+        self.current_test = next(self.test_names, "Done")
 
     def track_user_reading(self):
         while not self.stop_tracking_event.is_set():
             self.send_tracker_message()
-            sleep(0.1) # Adjust the frequency of tracking messages as needed
+            sleep(0.02) # Adjust the frequency of tracking messages as needed
         
     def wrap_text(self, text: str, max_width, max_height, min_font_size=20):
         font_size = 100  # Starting font size
@@ -213,22 +232,13 @@ class Test_Routine:
                 self.canvas.itemconfig(self.countdown_text, text=wrapped_text)
 
         type_text()
-
-    def transition_to_next_test(self):
-        # Transition to the next test in the sequence or the main screen
-        self.state = Routine_State.update_test
-        self.current_test = next(self.test_names, "Done")
-        if self.current_test == "Done":
-            # If no more tests are remaining, display the main screen
-            self.master.routine_finished()
-        else:
-            # Start the next test
-            self.main_function()
     
     def generate_gtdata_for_text(self, text, font_size):
         # Split the wrapped text into lines
         lines = text.split("\n")
-        font_height = font.Font(family='Arial',size=font_size,weight='bold').metrics('linespace')
+        # font_height = font.Font(family='Arial',size=font_size,weight='bold').metrics('linespace')
+        font_height = font_size
+        self.GTdata[self.current_test] = {"X": [], "Y": []}
 
         for i, line in enumerate(lines):
             # Get bounding box for the first and last character of the line
@@ -239,9 +249,6 @@ class Test_Routine:
                 x_first = bbox[0]
                 x_last = bbox[2]
 
-                # Store GTData for each line
-                if self.current_test not in self.GTdata.keys():
-                    self.GTdata[self.current_test] = {"X": [], "Y": [], "Time": []}
                 self.GTdata[self.current_test]["X"].append(x_first)
                 self.GTdata[self.current_test]["X"].append(x_last)
                 self.GTdata[self.current_test]["X"].append("NaN") # using NaN to distinguish between lines of text
