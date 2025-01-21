@@ -1,5 +1,5 @@
 # EYEfollow
-Steven Caro, Gian Favero Joshua Picchioni and Sam Letwin 2024
+Steven Caro, Gian Favero Joshua Picchioni and Sam Letwin 2025
 
 ![Screenshot](images/Logo.png)
 
