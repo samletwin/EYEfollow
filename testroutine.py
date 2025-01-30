@@ -146,6 +146,7 @@ class Test_Routine:
         tracking_thread.start()
 
     def reading_finished(self):
+        self.master.unbind("<KeyPress>")
         # stop tracker collection
         self.stop_tracking_event.clear()
         self.tracker.stop_collection()
