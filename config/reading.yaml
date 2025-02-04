@@ -25,10 +25,244 @@ grades_text:
         answer: Eat and drink
         message: Elephants use their trunks to...
         options: Fly/Run/Eat and drink/Climb
-  grade_10:
-    message: Elephants are keystone species; their activities are essential to their
-      ecosystems. They have a matriarchal social structure, and conservation efforts
-      are vital due to threats from poaching and habitat loss.
+  
+  grade_2:
+    message: Elephants are the largest land animals in the world. They have big ears and long trunks. Elephants use their trunks to pick up food and drink water. 
+      They also use their trunks to spray water on their backs to stay cool. Elephants live in Africa and Asia.
+    questions:
+      1:
+        answer: Land animals
+        message: Elephants are the largest...
+        options: Sea animals/Land animals/Flying animals/Underground animals
+      2:
+        answer: Their trunks
+        message: What do elephants use to pick up food?
+        options: Their ears/Their feet/Their trunks/Their tails
+      3:
+        answer: By spraying water on their backs
+        message: How do elephants stay cool?
+        options: By swimming/By using fans/By spraying water on their backs/By staying
+          in the shade
+      4:
+        answer: In Africa and Asia
+        message: Where do elephants live?
+        options: Only in zoos/In Africa and Asia/In cold places/In Australia
+      5:
+        answer: Herbivores
+        message: Elephants are what kind of animals?
+        options: Carnivores/Herbivores/Omnivores/Insects
+  grade_3:
+    message: Elephants are very big and smart animals. They live in Africa and Asia. They use their long trunks to eat, drink, and play. 
+      Elephants eat plants like grass, leaves, and fruit. They live in groups called herds, and they help each other stay safe from danger.
+    questions:
+      1:
+        answer: Herds
+        message: Elephants live in groups called...
+        options: Packs/Herds/Flocks/Schools
+      2:
+        answer: Grass, leaves, and fruit
+        message: What do elephants mainly eat?
+        options: Meat and fish/Grass, leaves, and fruit/Only fruit/Flowers and seeds
+      3:
+        answer: Africa and Asia
+        message: Where do elephants live?
+        options: Africa and Asia/Europe and Antarctica/North America and Australia/South
+          America and Europe
+      4:
+        answer: Eating, drinking, and playing
+        message: What do elephants use their trunks for?
+        options: Swimming/Eating, drinking, and playing/Flying/Digging
+      5:
+        answer: Safe
+        message: Elephants help each other stay...
+        options: Cool/Safe/Warm/Quiet
+  grade_4:
+    message: Elephants are the largest animals that live on land. 
+      They have long trunks, which they use for eating, drinking, and even playing.
+      Elephants are herbivores, meaning they only eat plants, like grass, leaves, and fruit. 
+      They live in groups called herds, and they can be found in Africa and Asia.
+    questions:
+      1:
+        answer: The largest animals that live on land
+        message: Elephants are...
+        options: The largest animals that live on land/The smallest animals that live
+          on land/The fastest animals that live on land/The heaviest animals in the
+          water
+      2:
+        answer: Plants
+        message: Elephants are herbivores. This means they eat...
+        options: Meat/Plants/Fish/Insects
+      3:
+        answer: Herds
+        message: Elephants live in groups called...
+        options: Herds/Teams/Packs/Swarms
+      4:
+        answer: Africa and Asia
+        message: Elephants can be found in...
+        options: Africa and Asia/North America and Australia/Europe and South America/Antarctica
+          and the Arctic
+      5:
+        answer: All of the above
+        message: Elephants use their trunks for...
+        options: Eating and drinking/Playing/Smelling and touching/All of the above
+  grade_5:
+    message: Elephants are the largest land mammals, known for their long trunks and large ears. 
+      These gentle giants use their trunks to drink water, eat leaves, and communicate with other elephants. 
+      Living in herds, elephants can be found in the grasslands and forests of Africa and Asia. 
+      They are social animals and care deeply for their families.
+    questions:
+      1:
+        answer: Land mammals
+        message: Elephants are the largest...
+        options: Land mammals/Flying birds/Water creatures/Underground animals
+      2:
+        answer: Drink water, eat, and communicate
+        message: Elephants use their trunks to...
+        options: Jump/Drink water, eat, and communicate/Sleep/Run faster
+      3:
+        answer: Grasslands and forests
+        message: Elephants live in...
+        options: Deserts and mountains/Grasslands and forests/Caves and underground/Oceans
+          and lakes
+      4:
+        answer: Large ears
+        message: Elephants are known for their...
+        options: Small ears/Large ears/Sharp teeth/Long tails
+      5:
+        answer: Social animals that care for their families
+        message: Elephants are...
+        options: Shy and lonely animals/Social animals that care for their families/Aggressive
+          animals that live alone/Animals that only stay in zoos
+  grade_6:
+    message: Elephants, the largest land animals, are highly intelligent creatures found in Africa and Asia. 
+      They use their trunks for various purposes, such as picking up food, drinking water, and even showing affection. 
+      Elephants are herbivores, feeding on grasses, leaves, and fruit. 
+      They live in herds led by an older female, and their social structures are strong, with members often helping one another.
+    questions:
+      1:
+        answer: Africa and Asia
+        message: Elephants are found in...
+        options: Africa and Asia/North America and Europe/Only in zoos/Antarctica
+      2:
+        answer: Showing affection
+        message: "What is one purpose of an elephant\u2019s trunk?"
+        options: Digging tunnels/Showing affection/Building homes/Fighting
+      3:
+        answer: An older female
+        message: Elephants live in groups led by...
+        options: The oldest male/An older female/The fastest elephant/The largest
+          elephant
+      4:
+        answer: Herbivores
+        message: Elephants are...
+        options: Carnivores/Omnivores/Herbivores/Insectivores
+      5:
+        answer: Sharing food and caring for young
+        message: Elephants help each other by...
+        options: Competing for food/Ignoring each other/Sharing food and caring for
+          young/Fighting
+  grade_7:
+    message: Elephants, the largest terrestrial mammals, are native to the continents of Africa and Asia. 
+      Their most distinctive feature, the trunk, serves as a multi-purpose tool for feeding, drinking, and communication. 
+      Elephants are herbivores and play a key role in their ecosystems by shaping their environments.
+      Highly social animals, elephants live in family groups led by a matriarch, and their bonds with one another are profound.
+    questions:
+      1:
+        answer: Africa and Asia
+        message: Elephants are native to...
+        options: Africa and Asia/South America and Europe/Antarctica and the Arctic/North
+          America and Australia
+      2:
+        answer: Eating, drinking, and communication
+        message: The trunk of an elephant is used for...
+        options: Eating, drinking, and communication/Running fast/Sleeping/Fighting
+      3:
+        answer: A matriarch
+        message: Elephants live in family groups led by...
+        options: A matriarch/The youngest elephant/The strongest male/A leader chosen
+          by vote
+      4:
+        answer: They shape their environments
+        message: Elephants are important in their ecosystems because...
+        options: They are the biggest animals/They shape their environments/They can
+          swim fast/They hunt other animals
+      5:
+        answer: Social animals with strong family bonds
+        message: Elephants are...
+        options: Shy and avoid each other/Social animals with strong family bonds/Always
+          alone/Aggressive to their family members
+  grade_8:
+    message: Elephants, the largest land mammals, are known for their intelligence, strong social bonds, 
+      and unique physical characteristics, especially their trunks and tusks. They are herbivores that play a crucial role in 
+      maintaining the balance of their ecosystems by uprooting trees and dispersing seeds. Elephants live in matriarchal herds,
+      which are often led by the oldest and wisest female, and they exhibit behaviors that show empathy, cooperation, and memory.
+    questions:
+      1:
+        answer: Intelligence, strong social bonds, and unique physical characteristics
+        message: Elephants are known for their...
+        options: Small trunks/Intelligence, strong social bonds, and unique physical
+          characteristics/Fast speed/Ability to live in cold environments
+      2:
+        answer: Uprooting trees and dispersing seeds
+        message: Elephants play an important role in their ecosystems by...
+        options: Staying in one place/Uprooting trees and dispersing seeds/Chasing
+          other animals away/Hiding in the forest
+      3:
+        answer: The oldest and wisest female
+        message: Who typically leads an elephant herd?
+        options: The youngest elephant/The largest male elephant/The oldest and wisest
+          female/The fastest elephant
+      4:
+        answer: Showing empathy, cooperation, and memory
+        message: Which of the following behaviors shows that elephants are intelligent
+          and social?
+        options: Ignoring each other/Running in all directions/Showing empathy, cooperation,
+          and memory/Competing for food
+      5:
+        answer: Maintain ecosystem balance through behaviors like uprooting trees
+        message: Elephants are considered important to their environment because they...
+        options: Travel in large groups/Eat all the trees/Maintain ecosystem balance
+          through behaviors like uprooting trees/Make the forest quiet
+  grade_9:
+    message: Elephants are the largest land animals, and their presence is vital to the ecosystems they inhabit. 
+      Found in both Africa and Asia, these herbivorous mammals use their trunks not only to gather food and water 
+      but also to communicate and express emotions. Elephants live in complex social structures, primarily female-led herds, 
+      where they cooperate to care for the young and protect one another. Their behavior shows remarkable intelligence, memory,
+      and emotional depth.
+    questions:
+      1:
+        answer: Express emotions and communicate
+        message: Elephants use their trunks to...
+        options: Swim in deep water/Express emotions and communicate/Chase away predators/Fly
+          through the trees
+      2:
+        answer: By protecting one another and caring for young
+        message: How do elephants cooperate within their social groups?
+        options: By protecting one another and caring for young/By fighting for food/By
+          leaving injured members behind/By ignoring each other
+      3:
+        answer: Complex and usually female-led
+        message: Elephants live in social structures that are...
+        options: Led by a strong male/Complex and usually female-led/Randomly organized/Separated
+          into individual territories
+      4:
+        answer: Remarkable intelligence, memory, and emotional depth
+        message: "Elephants\u2019 behaviors suggest they have which of the following\
+          \ qualities?"
+        options: Fear and nervousness/Remarkable intelligence, memory, and emotional
+          depth/Lack of social awareness/Extreme aggressiveness
+      5:
+        answer: Africa and Asia
+        message: In which continents can elephants be found, according to the passage?
+        options: Europe and Asia/Africa and Asia/South America and North America/Only
+          in Asia
+grade_10:
+    message: Elephants are the world\u2019s largest terrestrial animals, native to Africa and Asia,
+      and are essential keystone species in their environments. These herbivores use their trunks as 
+      versatile tools for feeding, drinking, and social interaction, while their tusks are used for digging and defense. 
+      Elephants display sophisticated social structures, often led by a matriarch, and they exhibit behaviors that suggest 
+      high cognitive abilities, such as problem-solving, mourning, and complex communication. Despite their importance, 
+      elephants face significant threats from poaching and habitat loss, making conservation efforts crucial for their survival.
     questions:
       1:
         answer: Their activities are essential to their ecosystems
@@ -58,228 +292,3 @@ grades_text:
         message: Elephants show high cognitive abilities, such as...
         options: Running fast and jumping/Problem-solving, mourning, and complex communication/Sleeping
           for long hours/Building nests
-  grade_2:
-    message: Elephants are the largest land animals. They use their trunks to pick
-      up food and spray water to stay cool. They live in Africa and Asia and are herbivores,
-      which means they eat plants.
-    questions:
-      1:
-        answer: Land animals
-        message: Elephants are the largest...
-        options: Sea animals/Land animals/Flying animals/Underground animals
-      2:
-        answer: Their trunks
-        message: What do elephants use to pick up food?
-        options: Their ears/Their feet/Their trunks/Their tails
-      3:
-        answer: By spraying water on their backs
-        message: How do elephants stay cool?
-        options: By swimming/By using fans/By spraying water on their backs/By staying
-          in the shade
-      4:
-        answer: In Africa and Asia
-        message: Where do elephants live?
-        options: Only in zoos/In Africa and Asia/In cold places/In Australia
-      5:
-        answer: Herbivores
-        message: Elephants are what kind of animals?
-        options: Carnivores/Herbivores/Omnivores/Insects
-  grade_3:
-    message: Elephants live in groups called herds. They mainly eat grass, leaves,
-      and fruit, and they use their trunks for eating, drinking, and playing. Elephants
-      help each other stay safe in their herds.
-    questions:
-      1:
-        answer: Herds
-        message: Elephants live in groups called...
-        options: Packs/Herds/Flocks/Schools
-      2:
-        answer: Grass, leaves, and fruit
-        message: What do elephants mainly eat?
-        options: Meat and fish/Grass, leaves, and fruit/Only fruit/Flowers and seeds
-      3:
-        answer: Africa and Asia
-        message: Where do elephants live?
-        options: Africa and Asia/Europe and Antarctica/North America and Australia/South
-          America and Europe
-      4:
-        answer: Eating, drinking, and playing
-        message: What do elephants use their trunks for?
-        options: Swimming/Eating, drinking, and playing/Flying/Digging
-      5:
-        answer: Safe
-        message: Elephants help each other stay...
-        options: Cool/Safe/Warm/Quiet
-  grade_4:
-    message: Elephants are the largest animals that live on land. They are herbivores
-      and live in groups called herds, mostly in Africa and Asia. Elephants use their
-      trunks for eating, drinking, smelling, and touching.
-    questions:
-      1:
-        answer: The largest animals that live on land
-        message: Elephants are...
-        options: The largest animals that live on land/The smallest animals that live
-          on land/The fastest animals that live on land/The heaviest animals in the
-          water
-      2:
-        answer: Plants
-        message: Elephants are herbivores. This means they eat...
-        options: Meat/Plants/Fish/Insects
-      3:
-        answer: Herds
-        message: Elephants live in groups called...
-        options: Herds/Teams/Packs/Swarms
-      4:
-        answer: Africa and Asia
-        message: Elephants can be found in...
-        options: Africa and Asia/North America and Australia/Europe and South America/Antarctica
-          and the Arctic
-      5:
-        answer: All of the above
-        message: Elephants use their trunks for...
-        options: Eating and drinking/Playing/Smelling and touching/All of the above
-  grade_5:
-    message: Elephants are the largest land mammals. They use their trunks to drink,
-      eat, and communicate. Elephants are known for their large ears and social nature,
-      often caring for their families in grasslands and forests.
-    questions:
-      1:
-        answer: Land mammals
-        message: Elephants are the largest...
-        options: Land mammals/Flying birds/Water creatures/Underground animals
-      2:
-        answer: Drink water, eat, and communicate
-        message: Elephants use their trunks to...
-        options: Jump/Drink water, eat, and communicate/Sleep/Run faster
-      3:
-        answer: Grasslands and forests
-        message: Elephants live in...
-        options: Deserts and mountains/Grasslands and forests/Caves and underground/Oceans
-          and lakes
-      4:
-        answer: Large ears
-        message: Elephants are known for their...
-        options: Small ears/Large ears/Sharp teeth/Long tails
-      5:
-        answer: Social animals that care for their families
-        message: Elephants are...
-        options: Shy and lonely animals/Social animals that care for their families/Aggressive
-          animals that live alone/Animals that only stay in zoos
-  grade_6:
-    message: Elephants are found in Africa and Asia. They use their trunks for showing
-      affection and live in groups led by an older female. Elephants are herbivores,
-      and they help each other by sharing food and caring for young.
-    questions:
-      1:
-        answer: Africa and Asia
-        message: Elephants are found in...
-        options: Africa and Asia/North America and Europe/Only in zoos/Antarctica
-      2:
-        answer: Showing affection
-        message: "What is one purpose of an elephant\u2019s trunk?"
-        options: Digging tunnels/Showing affection/Building homes/Fighting
-      3:
-        answer: An older female
-        message: Elephants live in groups led by...
-        options: The oldest male/An older female/The fastest elephant/The largest
-          elephant
-      4:
-        answer: Herbivores
-        message: Elephants are...
-        options: Carnivores/Omnivores/Herbivores/Insectivores
-      5:
-        answer: Sharing food and caring for young
-        message: Elephants help each other by...
-        options: Competing for food/Ignoring each other/Sharing food and caring for
-          young/Fighting
-  grade_7:
-    message: Elephants are native to Africa and Asia. They use their trunks for eating,
-      drinking, and communication. Family groups are led by a matriarch, and elephants
-      play a vital role in shaping their environments.
-    questions:
-      1:
-        answer: Africa and Asia
-        message: Elephants are native to...
-        options: Africa and Asia/South America and Europe/Antarctica and the Arctic/North
-          America and Australia
-      2:
-        answer: Eating, drinking, and communication
-        message: The trunk of an elephant is used for...
-        options: Eating, drinking, and communication/Running fast/Sleeping/Fighting
-      3:
-        answer: A matriarch
-        message: Elephants live in family groups led by...
-        options: A matriarch/The youngest elephant/The strongest male/A leader chosen
-          by vote
-      4:
-        answer: They shape their environments
-        message: Elephants are important in their ecosystems because...
-        options: They are the biggest animals/They shape their environments/They can
-          swim fast/They hunt other animals
-      5:
-        answer: Social animals with strong family bonds
-        message: Elephants are...
-        options: Shy and avoid each other/Social animals with strong family bonds/Always
-          alone/Aggressive to their family members
-  grade_8:
-    message: Elephants are known for their intelligence, strong social bonds, and
-      unique physical characteristics. They play a critical role in their ecosystems
-      by uprooting trees and dispersing seeds.
-    questions:
-      1:
-        answer: Intelligence, strong social bonds, and unique physical characteristics
-        message: Elephants are known for their...
-        options: Small trunks/Intelligence, strong social bonds, and unique physical
-          characteristics/Fast speed/Ability to live in cold environments
-      2:
-        answer: Uprooting trees and dispersing seeds
-        message: Elephants play an important role in their ecosystems by...
-        options: Staying in one place/Uprooting trees and dispersing seeds/Chasing
-          other animals away/Hiding in the forest
-      3:
-        answer: The oldest and wisest female
-        message: Who typically leads an elephant herd?
-        options: The youngest elephant/The largest male elephant/The oldest and wisest
-          female/The fastest elephant
-      4:
-        answer: Showing empathy, cooperation, and memory
-        message: Which of the following behaviors shows that elephants are intelligent
-          and social?
-        options: Ignoring each other/Running in all directions/Showing empathy, cooperation,
-          and memory/Competing for food
-      5:
-        answer: Maintain ecosystem balance through behaviors like uprooting trees
-        message: Elephants are considered important to their environment because they...
-        options: Travel in large groups/Eat all the trees/Maintain ecosystem balance
-          through behaviors like uprooting trees/Make the forest quiet
-  grade_9:
-    message: Elephants use their trunks to express emotions and communicate. They
-      live in complex social structures, often led by females, showing remarkable
-      intelligence, memory, and emotional depth.
-    questions:
-      1:
-        answer: Express emotions and communicate
-        message: Elephants use their trunks to...
-        options: Swim in deep water/Express emotions and communicate/Chase away predators/Fly
-          through the trees
-      2:
-        answer: By protecting one another and caring for young
-        message: How do elephants cooperate within their social groups?
-        options: By protecting one another and caring for young/By fighting for food/By
-          leaving injured members behind/By ignoring each other
-      3:
-        answer: Complex and usually female-led
-        message: Elephants live in social structures that are...
-        options: Led by a strong male/Complex and usually female-led/Randomly organized/Separated
-          into individual territories
-      4:
-        answer: Remarkable intelligence, memory, and emotional depth
-        message: "Elephants\u2019 behaviors suggest they have which of the following\
-          \ qualities?"
-        options: Fear and nervousness/Remarkable intelligence, memory, and emotional
-          depth/Lack of social awareness/Extreme aggressiveness
-      5:
-        answer: Africa and Asia
-        message: In which continents can elephants be found, according to the passage?
-        options: Europe and Asia/Africa and Asia/South America and North America/Only
-          in Asia
