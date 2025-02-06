@@ -76,16 +76,9 @@ class Application(tk.Tk):
             "Text_Reading": False,
         }
 
-        # Create an instance of the Home Screen frame
         self.frame = Home_Screen(master=self.container, controller=self)
-
-        # Create an instance of the test routine canvas
         self.test_routine_canvas = Test_Routine_Canvas(master=self.container, controller=self)
-
-        # Create an instance of a test routine object (displayed on test_routine_canvas)
         self.test_routine = Test_Routine(self, self.test_routine_canvas, self.ignore_popup)
-
-        # Create an instance of the Results Frame
         self.results_frame = Results_Frame(master=self.container, controller=self, input_directory=self.path)
 
         # Show the home screen
@@ -163,8 +156,7 @@ class Application(tk.Tk):
         End a vision test routine prematurely
         '''
         if self.current_frame == self.CURRENT_FRAME.EYE_TEST:
-            answer = askyesno(title='Quit Routine',
-                    message='Are you sure you want to quit?')
+            answer = askyesno(title='Quit Routine', message='Are you sure you want to quit?')
             if answer:
                 self.frame.tkraise()
                 self.config(cursor="arrow")
@@ -172,7 +164,12 @@ class Application(tk.Tk):
 
                 self.reset_buttons()
 
+                # Close Gazepoint
+                os.system("TASKKILL /IM Gazepoint.exe /F")
+                print("Gazepoint closed.")
+                
                 self.current_frame = self.CURRENT_FRAME.HOME
+
     
     def routine_finished(self, event=None):
         '''
@@ -220,10 +217,35 @@ class Application(tk.Tk):
         """
         Switch to the QuestionsFrame to display questions.
         """
+        # self.test_routine_canvas.grid_forget()
         self.questions_frame = QuestionsFrame(master=self.container, controller=self, questions=questions)
         self.questions_frame.grid(row=0, column=0, sticky="nsew")
         self.questions_frame.tkraise()
         self.current_frame = self.CURRENT_FRAME.QUESTIONS
+
+    def restart_gazepoint(self):
+        """
+        Restart the Gazepoint application.
+        """
+        try:
+            # Kill the Gazepoint process if it is running
+            os.system("TASKKILL /IM Gazepoint.exe /F")
+            sleep(2)
+            
+            # Start the Gazepoint application
+            os.startfile(r'C:/Program Files (x86)/Gazepoint/Gazepoint/bin64/Gazepoint.exe')
+            sleep(5)
+            
+            # Get the Gazepoint window
+            gazepoint_window = gw.getWindowsWithTitle("Gazepoint")
+            if gazepoint_window:
+                gazepoint_window = gazepoint_window[0]
+                print("Gazepoint restarted successfully.")
+            else:
+                print("Gazepoint window not found.")
+        except Exception as e:
+            print(f"Failed to restart Gazepoint: {e}")
+
 
     def handle_question_results(self, results):
         """
