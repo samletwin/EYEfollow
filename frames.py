@@ -16,7 +16,7 @@ import threading
 from dataclasses import dataclass
 import pandas as pd
 from tkinter import font
-import time
+import traceback
 
 class Home_Screen(tk.Frame):
     '''
@@ -404,6 +404,7 @@ class Results_Frame(tk.Frame):
 
         # Display message if no data is available
         if not any(self.enabled_buttons.values()):
+            self.result_canvas.delete("all")
             self.result_canvas.create_text(self.result_canvas.winfo_width() // 2, self.result_canvas.winfo_height() // 2, text="No data present", fill="black", font=("Helvetica", 16))
 
     def show_vertical_saccade(self):
@@ -666,6 +667,7 @@ class TextReadingResultsCanvas(tk.Canvas):
         self.total_correct = 0
         self.user_answers = []
         self.grade = 0
+        self.text_data = []
         try:
             xlsx = pd.ExcelFile(path)
             df = pd.read_excel(xlsx, 'ScreenConfig')
@@ -703,7 +705,7 @@ class TextReadingResultsCanvas(tk.Canvas):
             self.grade = int(df2['grade'][0])
             return True
         except Exception as e:
-            print(e)
+            traceback.print_exc()
             return False
 
 
