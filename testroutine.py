@@ -125,8 +125,8 @@ class Test_Routine:
         self.canvas.itemconfig(self.countdown_text, state='hidden')
         self.time_ref = time()
         self.start_countdown = 1
-        level = simpledialog.askinteger("Input", "Enter the level of difficulty (1-10):", minvalue=1, maxvalue=10)
-        self.grade_data = config.get_grade_data(level)
+        self.grade = simpledialog.askinteger("Input", "Enter the level of difficulty (1-10):", minvalue=1, maxvalue=10)
+        self.grade_data = config.get_grade_data(self.grade)
         test_config = config.get_text_test_config()
 
         self.canvas.itemconfig(self.ball, state='hidden')
@@ -158,6 +158,8 @@ class Test_Routine:
             self.GTdata[self.current_test]["question"].append(result['question'])
             self.GTdata[self.current_test]["user_answer"].append(result['user_answer'])
             self.GTdata[self.current_test]["correct_answer"].append(result['correct_answer'])
+        if len(results) > 0:
+            self.GTdata[self.current_test]['grade'] = self.grade
         self.state = Routine_State.update_test
         self.current_test = next(self.test_names, "Done")
 
@@ -173,7 +175,7 @@ class Test_Routine:
         current_line = ""
 
         # Create a temporary text object to measure text size
-        temp_text_id = self.canvas.create_text(0, 0, text="", font=("Arial", font_size, "bold"))
+        temp_text_id = self.canvas.create_text(self.master.width/2, self.master.height/2, text="", font=("Arial", font_size, "bold"), justify="center")
 
         while True:
             # Try wrapping the text with the current font size
@@ -210,15 +212,16 @@ class Test_Routine:
                 self.canvas.itemconfig(temp_text_id, font=("Arial", font_size, "bold"))
 
         # Remove the temporary text object
+        y1, y2 = bbox[1], bbox[3]
         self.canvas.delete(temp_text_id)
 
-        return "\n".join(lines), font_size
+        return "\n".join(lines), font_size, y1, y2
 
     def display_text(self, text, min_font_size, padding_hor_px=450, padding_ver_px=300, mode='all'):
         max_width = self.master.width - padding_hor_px  # Set some padding
         max_height = self.master.height - padding_ver_px  # Set some padding
-        wrapped_text, font_size = self.wrap_text(text, max_width, max_height, min_font_size)
-        self.generate_gtdata_for_text(wrapped_text, font_size)
+        wrapped_text, font_size, y1, y2 = self.wrap_text(text, max_width, max_height, min_font_size)
+        self.generate_gtdata_for_text(wrapped_text, font_size, y1, y2)
 
         # Update the font of countdown_text to the calculated font size
         self.canvas.itemconfig(self.countdown_text, font=("Arial", font_size, "bold"))
@@ -238,13 +241,12 @@ class Test_Routine:
 
         type_text()
     
-    def generate_gtdata_for_text(self, text, font_size):
+    def generate_gtdata_for_text(self, text: str, font_size, y1, y2):
         # Split the wrapped text into lines
         lines = text.split("\n")
-        # font_height = font.Font(family='Arial',size=font_size,weight='bold').metrics('linespace')
-        font_height = font_size
+        font_height = font.Font(family='Arial',size=font_size,weight='bold').metrics('linespace')
         self.GTdata[self.current_test] = {"X": [], "Y": [], 
-            "Text": [text], "Font_Size": [font_size], 
+            "Text": [text.replace("\n", "'")], "Font_Size": [font_size], 
             "question": [], "user_answer": [], "correct_answer":[]}
 
         for i, line in enumerate(lines):
@@ -255,29 +257,21 @@ class Test_Routine:
             if bbox:
                 x_first = bbox[0]
                 x_last = bbox[2]
-
                 self.GTdata[self.current_test]["X"].append(x_first)
                 self.GTdata[self.current_test]["X"].append(x_last)
                 self.GTdata[self.current_test]["X"].append("NaN") # using NaN to distinguish between lines of text
             # Remove the temporary text object
             self.canvas.delete(temp_text_id)
         # get y data
-        if len(lines) % 2 == 0: #even
-            lolz = int(len(lines)/2)
-            for i in range(lolz, -lolz, -1):
-                # if even, first line y value mid point = (screen height / 2 + [number of lines / 2] * [iter - 0.5] * font height 
-                y_midpoint = self.master.height / 2 + (lolz) * (i-0.5) * font_height 
-                self.GTdata[self.current_test]["Y"].append(y_midpoint)
-                self.GTdata[self.current_test]["Y"].append(y_midpoint)
-                self.GTdata[self.current_test]["Y"].append("NaN")
-        else: # odd
-            # y value mid point = (screen height / 2 + [number of lines / 2] * iter * font height)
-            lolz = floor(len(lines)/2)
-            for i in range (lolz, -lolz-1, -1):
-                y_midpoint = self.master.height / 2 + (lolz) * (i) * font_height 
-                self.GTdata[self.current_test]["Y"].append(y_midpoint)
-                self.GTdata[self.current_test]["Y"].append(y_midpoint)
-                self.GTdata[self.current_test]["Y"].append("NaN")
+        y_mid_top = y1 + font_height/2
+        y_mid_bottom = y2 - font_height/2
+        y_points = [y_mid_top + i * (y_mid_bottom - y_mid_top) / (len(lines)-1) for i in range(1, len(lines))]
+        y_points.insert(0, y_mid_top)
+        for y in y_points:
+            self.GTdata[self.current_test]["Y"].append(y)
+            self.GTdata[self.current_test]["Y"].append(y)
+            self.GTdata[self.current_test]["Y"].append("NaN")
+        print(y_points)
                 
 
     def show_retry_dialog(self):

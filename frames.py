@@ -6,13 +6,17 @@ Gian Favero, Steven Caro and Joshua Picchioni
 '''
 
 import tkinter as tk
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageGrab
 from tkinter import ttk
 from tkinter.messagebox import *
 import os
 from processing import process_excel_file
 from images_to_pdf import images_to_pdf
 import threading
+from dataclasses import dataclass
+import pandas as pd
+from tkinter import font
+import time
 
 class Home_Screen(tk.Frame):
     '''
@@ -274,24 +278,11 @@ class Results_Frame(tk.Frame):
         self.enabled_buttons = {}
         self.image_paths = []
         self.file_name = ''
+        self.text_reading_gaze_data = {}
+        self.user_answers = []
+        self.grade = 0
 
-        # Dropdown to select Excel file
-        self.file_label = tk.Label(self, text="Select Excel File:", bg="white")
-        self.file_label.grid(row=0, column=0, padx=10, pady=10, sticky="w")
-        
-        self.file_dropdown = ttk.Combobox(self, state="readonly")
-        self.file_dropdown['values'] = self.get_excel_files()
-        self.file_dropdown.grid(row=0, column=1, padx=10, pady=10, sticky="w")
-
-        # Confirm button to select file
-        self.confirm_button = tk.Button(self, text="Confirm", command=self.confirm_file_selection)
-        self.confirm_button.grid(row=0, column=2, padx=10, pady=10, sticky="w")
-
-        # button to export results to pdf
-        self.to_pdf_button = tk.Button(self, text="Export to PDF", 
-                                       command=lambda: images_to_pdf(self.image_paths, f"{self.input_directory}/{self.file_name}.pdf", self.file_name), state='disabled')
-        self.to_pdf_button.grid(row=0, column=3, padx=10, pady=10, sticky="w")
-
+        self.draw_top_row()
 
         # Buttons for different result types (initially disabled)
         self.buttons_grid = ttk.Frame(self)
@@ -312,12 +303,12 @@ class Results_Frame(tk.Frame):
         self.buttons_grid.grid(row=1,column=0,padx=10, pady=10)
 
         # Canvas to display results
-        self.result_canvas = tk.Canvas(self, bg="gray")
+        self.result_canvas = TextReadingResultsCanvas(self, self.input_directory, self.master.winfo_rootx(), self.master.winfo_rooty(), bg="gray")
         self.result_canvas.grid(row=1, column=1, rowspan=6, padx=10, pady=5, sticky="nsew")
 
         # Exit button to go back to home screen
         self.exit_button = tk.Button(self, text="Exit", command=self.exit_results)
-        self.exit_button.grid(row=7, column=0, columnspan=3, padx=20, pady=10, sticky="ew")
+        self.exit_button.grid(row=7, column=0, columnspan=10, padx=20, pady=10, sticky="ew")
 
         # Configure row and column weights
         self.grid_rowconfigure(1, weight=1)
@@ -325,6 +316,32 @@ class Results_Frame(tk.Frame):
 
         self.animate_text = False
         self.animate_counter = 0
+
+    def draw_top_row(self):
+        self.top_row_grid = ttk.Frame(self)
+        # Dropdown to select Excel file
+        self.file_label = tk.Label(self.top_row_grid, text="Select Excel File:", bg="white")
+        self.file_label.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+        
+        self.file_dropdown = ttk.Combobox(self.top_row_grid, state="readonly")
+        self.file_dropdown['values'] = self.get_excel_files()
+        self.file_dropdown.grid(row=0, column=1, padx=10, pady=10, sticky="w")
+
+        # Confirm button to select file
+        self.confirm_button = tk.Button(self.top_row_grid, text="Confirm", command=self.confirm_file_selection)
+        self.confirm_button.grid(row=0, column=2, padx=10, pady=10, sticky="w")
+
+        # button to export results to pdf
+        self.to_pdf_button = tk.Button(self.top_row_grid, text="Export to PDF", 
+            command=lambda: self.export_to_pdf(), state='disabled')
+        self.to_pdf_button.grid(row=0, column=3, padx=10, pady=10, sticky="e")
+        self.top_row_grid.grid(row=0, column=0, columnspan=10, padx=10, pady=10, sticky="ew")
+
+    def export_to_pdf(self):
+        if self.text_reading_shown_flag is False and self.text_reading_parsed_flag is True:
+            # need to show the text on the canvas so it can be saved as an image - this is not great but oh well
+            self.show_text_reading()
+        images_to_pdf(self.image_paths, f"{self.input_directory}/{self.file_name}.pdf", self.file_name, self.user_answers, self.grade)
 
     def tkraise(self, aboveThis=None):
         super().tkraise(aboveThis)
@@ -337,6 +354,7 @@ class Results_Frame(tk.Frame):
 
     def confirm_file_selection(self):
         """Process the selected Excel file and enable buttons based on data availability."""
+        self.text_reading_shown_flag = False
         selected_file = self.file_dropdown.get()
         if not selected_file:
             return
@@ -348,6 +366,7 @@ class Results_Frame(tk.Frame):
         self.start_processing(file_path, file_path_gt)
 
     def animate_text_func(self):
+        self.result_canvas.configure(bg="gray")
         dots = '.'*self.animate_counter
         self.animate_counter += 1 
         if self.animate_counter > 3:
@@ -361,7 +380,12 @@ class Results_Frame(tk.Frame):
         def thread_function():
             nonlocal file_path, file_path_gt
             # Process the file in the background
-            self.enabled_buttons = process_excel_file(file_path, file_path_gt, self.input_directory)
+            self.enabled_buttons, self.text_reading_gaze_data = process_excel_file(file_path, file_path_gt, self.input_directory)
+            self.text_reading_parsed_flag = self.result_canvas.parse_excel(file_path_gt)
+            self.user_answers = self.result_canvas.user_answers
+            self.grade = self.result_canvas.grade
+            if self.text_reading_parsed_flag is False:
+                self.enabled_buttons['Text_Reading'] = False
             self.image_paths = [f"{self.input_directory}/{sheet}.png" for sheet in self.enabled_buttons.keys() if self.enabled_buttons[sheet] == True]
             
             # Now that processing is done, use `after` to safely update the canvas in the main thread
@@ -381,8 +405,10 @@ class Results_Frame(tk.Frame):
         self.animate_text = False
         self.animate_counter = 0
         self.result_canvas.delete("all")
-        self.result_canvas.create_text(self.result_canvas.winfo_width() // 2, self.result_canvas.winfo_height() // 2, text=f"Processing complete!~", font=("Helvetica", 16))
         
+        self.result_canvas.configure(bg="gray")
+        self.result_canvas.create_text(self.result_canvas.winfo_width() // 2, self.result_canvas.winfo_height() // 2, text=f"Processing complete!~", font=("Helvetica", 16))
+
         # Enable buttons based on the result of file processing
         if any(self.enabled_buttons.values()):
             self.to_pdf_button.config(state='normal')
@@ -413,10 +439,16 @@ class Results_Frame(tk.Frame):
         self.display_image(f'{self.input_directory}/Smooth_Horizontal.png')
 
     def show_text_reading(self):
-        self.display_image(f'{self.input_directory}/Text_Reading.png')
+        self.text_reading_shown_flag = True
+        self.result_canvas.plot_data(
+            (self.text_reading_gaze_data['L_Text_Reading'][:, 0], self.text_reading_gaze_data['L_Text_Reading'][:, 1]),
+            (self.text_reading_gaze_data['R_Text_Reading'][:, 0], self.text_reading_gaze_data['R_Text_Reading'][:, 1])
+        )
+        self.result_canvas.canvas_to_image()
 
     def display_image(self, image_path):
         """Display an image in the result canvas."""
+        self.result_canvas.delete("all")
         image = Image.open(image_path)
         image = image.resize((self.result_canvas.winfo_width(), self.result_canvas.winfo_height()), Image.ANTIALIAS)
         photo_image = ImageTk.PhotoImage(image)
@@ -426,7 +458,6 @@ class Results_Frame(tk.Frame):
     def exit_results(self):
         self.controller.show_home()
 
-
 class Test_Routine_Canvas(tk.Canvas):
     '''
     Class to represent the "Main Canvas" of the application. Hosts the ball
@@ -435,4 +466,261 @@ class Test_Routine_Canvas(tk.Canvas):
         tk.Canvas.__init__(self, master)
         self.controller = controller
         self.config(height=controller.height, width=controller.width, bg="black")
+
+@dataclass
+class UnscaledTextData:
+    x1: int
+    y1: int
+    width: int
+    height: int
+    text: str
+class TextReadingResultsCanvas(tk.Canvas):
+    def __init__(self, master, output_dir, rootx, rooty, padding=25, **kwargs):
+        """
+        A Canvas subclass that draws grids, text, and eye points,
+        sized/scaled based on the widget's width/height.
+        """
+        super().__init__(master, **kwargs)
+
+        self.padding = padding
+        self.text_data = []
+        self.output_dir = output_dir
+        self.rootx = rootx
+        self.rooty = rooty
+
+        # Will store data for drawn text, points, etc.
+        self.left_eye_point = None
+        self.right_eye_point = None
+        self.text_lines = []
+
+        # Internal usage
+        self.width = 1
+        self.height = 1
+        self.grid_interval = 0.2
+
+        # Bind the <Configure> event so we can track canvas size changes
+        self.bind("<Configure>", self.on_resize)
+
+        # Initialize
+        self.total_questions = 0
+        self.total_correct = 0
+        self.user_answers = []
+        self.grade = 0
+        self.configure_screen_attributes()
+
+    def configure_screen_attributes(self):
+        """
+        Equivalent to your old method: set up initial width/height
+        or any other screen attributes needed.
+        """
+        self.width = self.winfo_width()
+        self.height = self.winfo_height()
+        # Example: To make it fullscreen, if needed (commented out):
+        # self.master.attributes("-fullscreen", True)
+
+    def on_resize(self, event):
+        """
+        Handle the resize event: store new width/height, then redraw.
+        """
+        self.width = event.width
+        self.height = event.height
+        # self.redraw()
+
+    def redraw(self):
+        """
+        Clear the canvas, then redraw all elements.
+        """
+        self.delete("all")
+        self.config(bg="white")
+        self.draw_grid()
+        self.draw_points()
+        self.draw_text()
+        self.draw_score(self.total_questions, self.total_correct)
+        self.draw_legend()
+        self.draw_title("Text_Reading")
+
+    def draw_grid(self):
+        """Draw a grid with x and y scales at specified intervals."""
+        self.delete("grid")  # Clear any existing grid lines by tag
+        TEXT_PADDING = 5
+
+        # Draw vertical lines
+        num_steps = int(1 / self.grid_interval) + 1
+        for i in range(num_steps):
+            x = self.padding + i * self.grid_interval * (self.width - 2 * self.padding)
+            self.create_line(x, self.padding, x, self.height - self.padding, fill='gray', tags="grid")
+            self.create_text(x, self.height - self.padding + TEXT_PADDING, 
+                             text=f"{i * self.grid_interval :.1f}", 
+                             anchor='n', tags="grid")
+
+        # Draw horizontal lines
+        for i in range(num_steps):
+            y = self.height - (self.padding + i * self.grid_interval * (self.height - 2 * self.padding))
+            self.create_line(self.padding, y, self.width - self.padding, y, fill='gray', tags="grid")
+            self.create_text(self.padding - TEXT_PADDING, y, 
+                             text=f"{i * self.grid_interval :.1f}", 
+                             anchor='e', tags="grid")
+
+    def find_font_size(self, text, width, font_family="Arial", weight="bold"):
+        """
+        Simple binary search for largest font size that fits within 'width' pixels.
+        """
+        low, high = 1, 100
+        best_size = low
+
+        while low <= high:
+            mid = (low + high) // 2
+            test_font = font.Font(family=font_family, size=mid, weight=weight)
+            text_width = test_font.measure(text)
+            
+            if text_width <= width:
+                best_size = mid
+                low = mid + 1
+            else:
+                high = mid - 1
+
+        return best_size
+
+    def draw_text(self):
+        """
+        Draw text onto the canvas at scaled positions.
+        """
+        got_font_size = False
+        for text_data in self.text_data:
+            # Only calculate font size once per draw cycle (assuming same text width).
+            if not got_font_size:
+                # Scale the text's desired width to the canvas
+                scaled_width = text_data.width * self.width
+                font_size = self.find_font_size(text_data.text, scaled_width)
+                got_font_size = True
+
+            # Calculate scaled center
+            x_centre_scaled = int(text_data.x1 * self.width) + (text_data.width * self.width) / 2
+            y_centre_scaled = int(text_data.y1 * self.height) - (text_data.height * self.height) / 2
+
+            # Ensure at least size=1
+            font_size = max(1, font_size)
+
+            # Draw text
+            self.create_text(
+                x_centre_scaled,
+                y_centre_scaled,
+                text=text_data.text,
+                font=("Arial", font_size, "bold"),
+                justify='center'
+            )
+
+    def plot_data(self, left_eye_point, right_eye_point):
+        """
+        Store new data points, then redraw everything.
+        """
+        self.left_eye_point = left_eye_point
+        self.right_eye_point = right_eye_point
+        self.redraw()
+
+    def scale_point(self, point):
+        """
+        Convert normalized (0-1) coordinates to canvas pixels.
+        Invert y because in typical computer graphics, y increases downward.
+        """
+        x = self.padding + point[0] * (self.width - 2 * self.padding)
+        y = self.height - (self.padding + point[1] * (self.height - 2 * self.padding))
+        return x, y
+
+    def draw_points(self):
+        """
+        Draw separate eye points.
+        """
+        if self.left_eye_point:
+            for x,y in zip(self.left_eye_point[0], self.left_eye_point[1]):
+                left_eye = self.scale_point((x, y))
+                self.create_text(left_eye[0], left_eye[1], text='•', font=("Arial", 12), fill='red')
+        
+        if self.right_eye_point:
+            for x, y in zip(self.right_eye_point[0], self.right_eye_point[1]):
+                right_eye = self.scale_point((x,y))
+                self.create_text(right_eye[0], right_eye[1], text='•', font=("Arial", 12), fill='blue')
+
+    def draw_legend(self):
+        """
+        Draw a legend in the top-right corner of the canvas.
+        """
+        self.create_text(self.width - self.padding, self.padding, text='Legend:', 
+                         anchor='ne', font=("Arial", 10, "bold"))
+        self.create_text(self.width - self.padding, self.padding + 20, 
+                         text='• Left Eye', anchor='ne', font=("Arial", 10), fill='red')
+        self.create_text(self.width - self.padding, self.padding + 40, 
+                         text='• Right Eye', anchor='ne', font=("Arial", 10), fill='blue')
+        
+    def draw_score(self, total_questions:int, answers_right:int):
+        self.create_text(self.padding, self.padding, text=f'Score: {answers_right}/{total_questions}', 
+                         anchor='nw', font=("Arial", 10, "bold"))
+
+    def draw_title(self, title):
+        """
+        Draw a title at the top-center of the canvas.
+        """
+        self.create_text(
+            self.width / 2,
+            self.padding / 2,
+            text=title,
+            font=("Arial", 16, "bold"),
+            anchor='center'
+        )
+
+    def canvas_to_image(self):
+        x = self.rootx + self.winfo_x()
+        y = self.rooty + self.winfo_y()
+        x1 = x + self.winfo_width()
+        y1 = y + self.winfo_height()
+        self.update_idletasks() #make sure canvas is drawn
+        img = ImageGrab.grab((x, y, x1, y1))
+        img.save(f"{self.output_dir}\\Text_Reading.png", "png")
+
+    def parse_excel(self, path):
+        # reset data
+        self.total_questions = 0
+        self.total_correct = 0
+        self.user_answers = []
+        self.grade = 0
+        try:
+            xlsx = pd.ExcelFile(path)
+            df = pd.read_excel(xlsx, 'ScreenConfig')
+            screen_width, screen_height = df['Width'][0], df['Height'][0]
+            
+            df2 = pd.read_excel(xlsx, 'Text_Reading')
+            font_size = int(df2['Font_Size'][0])
+            text_lines = df2['Text'][0].split("'")
+            self.full_text = " ".join(text_lines)
+
+            x_data = df2['X'].dropna()
+            y_data = df2['Y'].dropna()
+
+            first_point = True
+            i = 0
+            for x, y in zip(x_data, y_data):
+                if first_point:
+                    (x1, y1) = (x / screen_width, (y + font_size * 0.5) / screen_height)
+                    first_point = False
+                else:
+                    first_point = True
+                    (x2, y2) = (x / screen_width, (y - font_size * 0.5) / screen_height)
+                    text_width, text_height = abs(x2 - x1), abs(y2 - y1)
+                    self.text_data.append(
+                        UnscaledTextData(
+                            x1, y1, text_width, text_height, text_lines[i]
+                        )
+                    )
+                    i += 1
+
+            # get score
+            self.total_questions = df2['question'].count()
+            self.total_correct = df2['user_answer'].eq(df2['correct_answer']).sum()
+            self.user_answers = df2['user_answer'].dropna().tolist()
+            self.grade = int(df2['grade'][0])
+            return True
+        except Exception as e:
+            print(e)
+            return False
+
 

@@ -160,6 +160,9 @@ def process_ground_truth_data(file_path, sheets):
     screen_width = screen_cfg[0, 1]
     screen_height = screen_cfg[0, 2]
     for sheet in sheets:
+        if sheet == "Text_Reading":
+            continue
+
         file_data = pd.read_excel(file_path, sheet_name=sheet).to_numpy()
         # Replace string "NaN" values with None
         file_data = np.where(file_data == "NaN", None, file_data)
@@ -167,10 +170,6 @@ def process_ground_truth_data(file_path, sheets):
         if sheet == 'Vertical_Saccade' or sheet == 'Horizontal_Saccade':
             x = file_data[0:2, 1]
             y = file_data[0:2, 2]
-            t = np.zeros(len(x))
-        elif sheet == 'Text_Reading':
-            x = file_data[0:, 1]
-            y = file_data[0:, 2]
             t = np.zeros(len(x))
         else:
             t = file_data[0:, 1]
@@ -315,6 +314,8 @@ def process_excel_file(file_path, file_path_gaze, output_folder, plotPCData = Fa
     dataGT = process_ground_truth_data(file_path_gaze, sheets)
  
     for sheet in sheets:
+        if sheet == 'Text_Reading':
+            continue
         eye_data_to_image(dataPC, dataGaze, dataGT, sheet, sheet, output_folder, plotPCData)
  
-    return enabled_buttons
+    return enabled_buttons, dataGaze
