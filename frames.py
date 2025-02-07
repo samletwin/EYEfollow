@@ -133,139 +133,122 @@ class QuestionsFrame(tk.Frame):
         self.controller = controller
         self.questions = questions
         self.user_answers = []
-        self.configure(bg="white", cursor="arrow")
-        self.frame = tk.Frame(self, bg="white")
-        self.frame.pack(expand=True, fill="both")
-
+        self.configure(bg="black", cursor="arrow")
+        self.frame = tk.Frame(self, bg="black")
+        self.frame.pack(expand=True, fill="both")  # Main frame expands to fill available space
         self.selected_button_index = {}
+        self.current_question_index = 0
         self.create_question_widgets()
 
     def create_question_widgets(self):
-        self.current_row = 0
+        # Create a content frame centered in the main frame
+        self.content_frame = tk.Frame(self.frame, bg="black")
+        self.content_frame.place(relx=0.5, rely=0.5, anchor="center")  # Center the content frame
 
         # Store state for answers
         self.selected_answers = {}  # To track selected answers for each question
         self.correct_answers = {}  # To store correct answers
         self.option_widgets = {}  # To store option widgets for highlighting
 
-        for i, question in enumerate(self.questions):
-            question_text = question["message"]
-            options = question["options"]
-            correct_answer = question["answer"]
+        self.question_label = tk.Label(self.content_frame, text="", bg="black", fg="white", font=("Arial", 16))
+        self.question_label.pack(anchor="center", pady=20)
 
-            # Save correct answer for the question
-            self.correct_answers[i] = correct_answer
-            self.option_widgets[i] = []  # Initialize list for storing option widgets
+        self.option_buttons = []
+        for i in range(4):
+            button = tk.Radiobutton(self.content_frame, text="", bg="black", fg="white", font=("Arial", 14), 
+                                    variable=tk.IntVar(), value=i, 
+                                    command=lambda q=i: self.store_answer(q))
+            button.pack(anchor="center", padx=20, pady=5)
+            self.option_buttons.append(button)
 
-            # Display question text
-            tk.Label(
-                self.frame, text=f"Q{i+1}: {question_text}", font=("Arial", 18, "bold"),
-                bg="white", anchor="center"
-            ).grid(row=self.current_row, columnspan=20, pady=20, sticky="nsew")
-            self.current_row += 1
+        self.navigation_frame = tk.Frame(self.content_frame, bg="black")
+        self.navigation_frame.pack(pady=20)
 
-            # Create buttons for options with callbacks
-            for j, option in enumerate(options):
-                radio_button = tk.Radiobutton(
-                    self.frame,
-                    text=option,
-                    value=option,
-                    variable=tk.IntVar(),
-                    command=lambda q=i, opt=option: self.store_answer(q, opt),
-                    bg="white",
-                    font=("Arial", 14),
-                    cursor="arrow",
-                    disabledforeground="black"
-                )
-                radio_button.grid(row=self.current_row, column=j, padx=10, pady=10, sticky="nsew")
-                self.option_widgets[i].append(radio_button)  # Store the widget for later
-            self.current_row += 1
+        self.back_button = tk.Button(self.navigation_frame, text="Back", command=self.show_previous_question, state="disabled")
+        self.back_button.pack(side="left", padx=10)
 
-        # Submit button
-        self.submit_button = tk.Button(
-            self.frame, text="Submit", command=self.submit_answers, bg="#adffab", cursor="arrow", font=("Arial", 18)
-        )
-        self.submit_button.grid(row=self.current_row, columnspan=20, padx=10, pady=10, sticky="ew")
+        self.next_button = tk.Button(self.navigation_frame, text="Next", command=self.show_next_question)
+        self.next_button.pack(side="right", padx=10)
 
-        # Score label
-        self.current_row+=1
-        self.score_label = tk.Label(self.frame, text="", font=("Arial", 18), bg="white", fg="black")
-        self.score_label.grid(row=self.current_row, columnspan=20, pady=10, sticky="ns")
+        self.submit_button = tk.Button(self.navigation_frame, text="Submit", command=self.submit_answers, state="disabled")
+        self.submit_button.pack(side="right", padx=10)
 
-        self.frame.grid_columnconfigure(0, weight=1)
-        self.frame.grid_columnconfigure(1, weight=1)
-        self.frame.grid_columnconfigure(2, weight=1)
-        self.frame.grid_columnconfigure(3, weight=1)
+        self.show_question()
 
-    def store_answer(self, question_index, selected_option):
+    # The rest of the methods remain unchanged as in the original code
+    def show_question(self, going_back=False):
+        selected_question_text = None
+        if going_back is True:
+            selected_question_text = self.selected_answers.get(self.current_question_index)
+            self.selected_question = True
+        else:
+            self.selected_question = False
+        question = self.questions[self.current_question_index]
+        self.question_label.config(text=question["message"])
+
+        for i, option in enumerate(question["options"]):
+            self.option_buttons[i].config(text=option, value=i, bg="black")
+            if option == selected_question_text:
+                self.option_buttons[i].config(bg="red")
+
+        self.update_navigation_buttons()
+
+    def store_answer(self, btn_index):
         # highlight selected answer as well
-        for radio_button in self.option_widgets[question_index]:
-            if radio_button["text"] == selected_option:
-                radio_button.configure(bg="grey")
+        self.selected_question = True
+        for i, radio_button in enumerate(self.option_buttons):
+            if i == btn_index:
+                radio_button.configure(bg="red")
+                selected_option = radio_button["text"]
             else:
-                radio_button.configure(bg="white")
-        self.selected_answers[question_index] = selected_option
+                radio_button.configure(bg="black")
+        self.selected_answers[self.current_question_index] = selected_option
+        self.update_navigation_buttons()
+
+    def show_next_question(self):
+        self.current_question_index += 1
+        self.show_question()
+
+    def show_previous_question(self):
+        self.current_question_index -= 1
+        self.show_question(True)
+
+    def update_navigation_buttons(self):
+        if self.current_question_index == 0:
+            self.back_button.config(state="disabled")
+        else:
+            self.back_button.config(state="normal")
+
+        if self.current_question_index == len(self.questions) - 1:
+            self.next_button.config(state="disabled")
+            if self.selected_question is True:
+                self.submit_button.config(state="normal")
+        else:
+            if self.selected_question is True:
+                self.next_button.config(state="normal")
+            else:
+                self.next_button.config(state="disabled")
+            self.submit_button.config(state="disabled")
 
     def submit_answers(self):
-        self.submit_button.configure(state="disabled")
-        correct_count = 0
-
-        # Compare selected answers with correct answers and highlight
-        for i, correct_answer in self.correct_answers.items():
-            selected_answer = self.selected_answers.get(i, None)  # Get the selected answer or None
-
-            # Highlight options for the current question
-            for radio_button in self.option_widgets[i]:
-                radio_button.configure(state="disabled")  # Disable the radio buttons
-                radio_button.configure(fg="black") # keep text black
-                if radio_button["text"] == correct_answer:
-                    radio_button.configure(bg="lightgreen")  # Correct answer
-                elif radio_button["text"] == selected_answer:
-                    radio_button.configure(bg="red")  # Incorrect selection
-                else:
-                    radio_button.configure(bg="white")
-
-            # Count correct answers
-            if selected_answer == correct_answer:
-                correct_count += 1
-
-        # Display the score
-        self.score_label.config(text=f"Your score is: {correct_count}/{len(self.questions)}")
-        self.current_row+=1
-        self.helper_label_green = tk.Label(self.frame, text="Items highlighted green are correct answers", font=("Arial", 18), bg="white"
-                                     ).grid(row=self.current_row, column=0, columnspan=2, padx=10, pady=10, sticky="ns")
-        self.helper_label_red = tk.Label(self.frame, text="Items highlighted red are your incorrect answers", font=("Arial", 18), bg="white"
-                                     ).grid(row=self.current_row, column=2, columnspan=2, padx=10, pady=10, sticky="ns")
-        self.current_row+=1
-        tk.Button(
-            self.frame, text="Retry test?", command=self.retry, bg="#adffab", cursor="arrow", font=("Arial", 18)
-        ).grid(row=self.current_row, column=0, columnspan=2, padx=10, sticky="ew")
-        tk.Button(
-            self.frame, text="Continue", command=self.handle_results, bg="#adffab", cursor="arrow", font=("Arial", 18)
-        ).grid(row=self.current_row, column=2, columnspan=2, padx=10, sticky="ew")
-
-    def handle_results(self):
         results = []
-
-        # Iterate through the questions and user answers
-        for i, correct_answer in self.correct_answers.items():
-            user_answer = self.selected_answers.get(i, None)  # Get the selected answer or None
-            is_correct = user_answer == correct_answer
-
-            # Append the results for each question
+        score = sum(1 for i, question in enumerate(self.questions) if self.selected_answers.get(i) == question["answer"])
+        for i, question in enumerate(self.questions):
             results.append({
-                "question": self.questions[i]["message"],
-                "user_answer": user_answer if user_answer else "NA",
-                "correct_answer": correct_answer,
-                "is_correct": is_correct
+                "question": question["message"],
+                "user_answer": self.selected_answers[i],
+                "correct_answer": question["answer"]
             })
+        self.handle_results(score, results)
 
-        # Process results further if needed (e.g., send to controller)
-        self.controller.handle_question_results(results)
-
-    def retry(self):
-        self.controller.show_test_routine_canvas()
-        self.controller.test_routine.reading_main()
+    def handle_results(self, score, results):
+        self.question_label.config(text=f"Your score: {score}/{len(self.questions)}\nPress any key to continue")
+        self.controller.bind("<KeyPress>", lambda event: self.controller.handle_question_results(results))
+        for button in self.option_buttons:
+            button.pack_forget()
+        self.back_button.pack_forget()
+        self.next_button.pack_forget()
+        self.submit_button.pack_forget()
 
 
 class Results_Frame(tk.Frame):
