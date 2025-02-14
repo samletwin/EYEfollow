@@ -272,15 +272,6 @@ class Test_Routine:
             self.GTdata[self.current_test]["Y"].append(y)
             self.GTdata[self.current_test]["Y"].append("NaN")
         print(y_points)
-                
-
-    def show_retry_dialog(self):
-        retry = askyesno(title="Retry?", message="Would you like to retry the test?")
-        if not retry:
-            self.state = Routine_State.update_test
-            self.current_test = next(self.test_names, "Done")
-        else:
-            self.reading_main()
     
     def send_tracker_message(self):
         if self.collect_data:
@@ -363,12 +354,14 @@ class Test_Routine:
             return x_cen, y_cen 
 
     def vertical_saccade(self):
-        return lambda t: [(self.master.width / 2, self.master.height*(1/2+0.75/2)),
-                          (self.master.width / 2, self.master.height*(1/2-0.75/2))]
+        padding = self.test_params[self.current_test]["Padding_Px"]
+        return lambda t: [(self.master.width / 2, self.master.height - padding),
+                          (self.master.width / 2, padding)]
 
     def horizontal_saccade(self):
-        return lambda t: [(self.master.width / 2 + self.master.height*1.5/2, self.master.height/2), 
-                          (self.master.width / 2 - self.master.height*1.5/2, self.master.height/2)]
+        padding = self.test_params[self.current_test]["Padding_Px"]
+        return lambda t: [(self.master.width-padding, self.master.height/2), 
+                          (padding, self.master.height/2)]
 
     def smooth_vertical(self):
         return lambda t: (0, 0.95 * cos(2 * pi * self.test_params["Smooth_Vertical"]["Frequency"] * t))
