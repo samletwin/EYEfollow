@@ -8,6 +8,7 @@ Gian Favero and Steven Caro
 # Python Imports
 import os
 from time import sleep
+import traceback
 
 # Module Imports
 from open_gaze import EyeTracker
@@ -25,11 +26,36 @@ class EyeTracker_DM(EyeTracker):
     def set_screen_cfg(self, key, screen_cfg_data):
         self.GT_dfs[key] = pd.DataFrame(screen_cfg_data)
     
-    def start_collection(self):
+    def test_collection(self) -> bool:
+        try:
+            self.tracker_data = list[tuple[float, str, dict[str, str]]]()
+            self.send_data        = True
+            self.send_pupil_left  = True
+            self.send_pupil_right = True
+            self.send_pog_left    = True
+            self.send_pog_right   = True
+            self.send_time        = True
+            print(f"Tested data collection")
+        except:
+            print('FAILED TO START')
+            traceback.print_exc()
+            return False
+        # reset 
+        self.tracker_data = list[tuple[float, str, dict[str, str]]]()
+        self.send_data        = False
+        self.send_pupil_left  = False
+        self.send_pupil_right = False
+        self.send_pog_left    = False
+        self.send_pog_right   = False
+        self.send_time        = False
+        return True
+
+    def start_collection(self) -> bool:
         '''
         Starts eye tracker data collection
         '''
         try:
+            self.collecting_data = True
             self.tracker_data = list[tuple[float, str, dict[str, str]]]()
             self.send_data        = True
             self.send_pupil_left  = True
@@ -40,32 +66,39 @@ class EyeTracker_DM(EyeTracker):
             print(f"Started collecting data: {self.master.current_test}")
         except:
             print('FAILED TO START')
-            self.start_collection()
+            traceback.print_exc()
+            return False
+        return True
+
     
     def stop_collection(self):
         '''
         Stops eye tracker data collection, serializes it, and then formats into a pd dataframe
         '''
-        try:
-            self.send_data        = False
-            self.send_pupil_left  = False
-            self.send_pupil_right = False
-            self.send_pog_left    = False
-            self.send_pog_right   = False
-            self.send_time        = False
-            print(f"Finished collecting data: {self.master.current_test}")
-        except:
-            print("FAILED TO STOP")
-            self.stop_collection()
-        while True:
-            sleep(1e-2)
-            if self.read_msg_async() is None:
-                break
+        if self.collecting_data is True:
+            try:
+                self.collecting_data  = False
+                self.send_data        = False
+                self.send_pupil_left  = False
+                self.send_pupil_right = False
+                self.send_pog_left    = False
+                self.send_pog_right   = False
+                self.send_time        = False
+                print(f"Finished collecting data: {self.master.current_test}")
+            except:
+                print("FAILED TO STOP")
+                self.stop_collection()
+            while True:
+                sleep(1e-2)
+                if self.read_msg_async() is None:
+                    break
 
-        if self.master.current_test != "Done":
-            self.tracker_data = self.serialize_tracker_data(self.tracker_data)
-            self.dfs[self.master.current_test]=pd.DataFrame(self.tracker_data)
-            self.GT_dfs[self.master.current_test]=pd.DataFrame(dict([(k, pd.Series(v)) for k, v in self.master.GTdata[self.master.current_test].items()])) #handles arrays of diff length
+            if self.master.current_test != "Done":
+                self.tracker_data = self.serialize_tracker_data(self.tracker_data)
+                self.dfs[self.master.current_test]=pd.DataFrame(self.tracker_data)
+                self.GT_dfs[self.master.current_test]=pd.DataFrame(dict([(k, pd.Series(v)) for k, v in self.master.GTdata[self.master.current_test].items()])) #handles arrays of diff length
+        else:
+            print("Tried to stop data colleciton when data collection hasn't started!")
 
     def serialize_tracker_data(self, data: list[tuple[float, str, dict[str, str]]]) -> str:
         '''
@@ -108,8 +141,10 @@ class EyeTracker_DM(EyeTracker):
             os.makedirs(path)
 
         #TODO: fix this  
-        self.GT_dfs["Text_Reading"]=pd.DataFrame(dict([(k, pd.Series(v)) for k, v in self.master.GTdata["Text_Reading"].items()])) #handles arrays of diff length
-        
+        try:
+            self.GT_dfs["Text_Reading"]=pd.DataFrame(dict([(k, pd.Series(v)) for k, v in self.master.GTdata["Text_Reading"].items()])) #handles arrays of diff length
+        except KeyError:
+            ... # don't care if key error - means we havent done text reading test 
         with pd.ExcelWriter(f"{path}/{self.master.participant_name}_GT.xlsx") as writer:
             for key in self.master.GTdata.keys():
                 self.GT_dfs[key].to_excel(writer, sheet_name=key)

@@ -269,10 +269,21 @@ class Application(tk.Tk):
         Create the array of routines selected for the current sequence of vision tests
         '''
         # Bring calibration window to the forefront
-        activate_gazepoint(self.gazepoint_window)
+        while True:
+            activate_gazepoint(self.gazepoint_window)
 
-        while gw.getActiveWindowTitle() == "Gazepoint Control x64" and not None:
-            sleep(10e-2)
+            while gw.getActiveWindowTitle() == "Gazepoint Control x64" and not None:
+                sleep(10e-2)
+
+            # check if can communicate with gazepoint
+            retval = self.test_routine.tracker.test_collection()
+            if retval is True:
+                break
+            else:
+                showerror("Error", "Error attempting to communicate with Gazepoint. Restarting Gazepoint.")
+                print("Failed to communicate with eyetracker. Restarting")
+                self.restart_gazepoint()
+
 
         invalid_windows_file_characters = ['/','\\',':','*','?','"','<','>','|']
         # Get participant's name
@@ -321,19 +332,24 @@ def activate_gazepoint(window='empty'):
     # Check if window was accidentally closed
     gazepoint_window = None if "Gazepoint Control x64" not in gw.getAllTitles() else window
 
-    try:
-        if gazepoint_window is None:
-            os.startfile('C:/Program Files (x86)/Gazepoint/Gazepoint/bin64/Gazepoint.exe')
-            sleep(2)
-            gazepoint_window = gw.getWindowsWithTitle("Gazepoint")[0]
-        elif gazepoint_window == 'empty':
-            gazepoint_window = gw.getWindowsWithTitle("Gazepoint")[0]
-            gazepoint_window.activate()
-        else:
-            gazepoint_window.activate()
-        sleep(0.2)
-    except:
-        traceback.print_exc()
+    for attempts in range(3):
+        try:
+            if gazepoint_window is None:
+                os.startfile('C:/Program Files (x86)/Gazepoint/Gazepoint/bin64/Gazepoint.exe')
+                sleep(2)
+                gazepoint_window = gw.getWindowsWithTitle("Gazepoint")[0]
+            elif gazepoint_window == 'empty':
+                gazepoint_window = gw.getWindowsWithTitle("Gazepoint")[0]
+                gazepoint_window.activate()
+            else:
+                gazepoint_window.activate()
+            sleep(0.2)
+            # gazepoint active, try sending messages
+            break
+        except:
+            traceback.print_exc()
+    if attempts >= 2 and gazepoint_window is None:
+        print("Failed to activate gazepoint 3+ times in a row.")
     return gazepoint_window
 
 if __name__ == '__main__':
