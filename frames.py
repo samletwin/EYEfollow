@@ -150,12 +150,12 @@ class QuestionsFrame(tk.Frame):
         self.correct_answers = {}  # To store correct answers
         self.option_widgets = {}  # To store option widgets for highlighting
 
-        self.question_label = tk.Label(self.content_frame, text="", bg="black", fg="white", font=("Arial", 16))
+        self.question_label = tk.Label(self.content_frame, text="", bg="black", fg="white", font=("Arial", 32, "bold"))
         self.question_label.pack(anchor="center", pady=20)
 
         self.option_buttons = []
         for i in range(4):
-            button = tk.Radiobutton(self.content_frame, text="", bg="black", fg="white", font=("Arial", 14), 
+            button = tk.Radiobutton(self.content_frame, text="", bg="black", fg="white", font=("Arial", 28), 
                                     variable=tk.IntVar(), value=i, 
                                     command=lambda q=i: self.store_answer(q))
             button.pack(anchor="center", padx=20, pady=5)
@@ -164,13 +164,13 @@ class QuestionsFrame(tk.Frame):
         self.navigation_frame = tk.Frame(self.content_frame, bg="black")
         self.navigation_frame.pack(pady=20)
 
-        self.back_button = tk.Button(self.navigation_frame, text="Back", command=self.show_previous_question, state="disabled")
+        self.back_button = tk.Button(self.navigation_frame, text="Back", font=("Arial", 28), command=self.show_previous_question, state="disabled")
         self.back_button.pack(side="left", padx=10)
 
-        self.next_button = tk.Button(self.navigation_frame, text="Next", command=self.show_next_question)
+        self.next_button = tk.Button(self.navigation_frame, text="Next", font=("Arial", 28), command=self.show_next_question)
         self.next_button.pack(side="right", padx=10)
 
-        self.submit_button = tk.Button(self.navigation_frame, text="Submit", command=self.submit_answers, state="disabled")
+        self.submit_button = tk.Button(self.navigation_frame, text="Submit", font=("Arial", 28), command=self.submit_answers, state="disabled")
         self.submit_button.pack(side="right", padx=10)
 
         self.show_question()

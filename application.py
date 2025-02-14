@@ -171,11 +171,11 @@ class Application(tk.Tk):
                 self.current_frame = self.CURRENT_FRAME.HOME
 
     
-    def routine_finished(self, event=None):
+    def routine_finished(self, event=None, show_popup=True):
         '''
         Define exit behaviour once the selected vision therapy tests have been completed
         '''
-        if self.ignore_popup is False:
+        if show_popup is True:
             answer = showinfo(title="Completion", message="Eye Test Complete")
         else:
             answer = True

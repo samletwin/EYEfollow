@@ -256,8 +256,8 @@ grades_text:
         message: In which continents can elephants be found, according to the passage?
         options: Europe and Asia/Africa and Asia/South America and North America/Only
           in Asia
-grade_10:
-    message: Elephants are the world\u2019s largest terrestrial animals, native to Africa and Asia,
+  grade_10:
+    message: Elephants are the world's largest terrestrial animals, native to Africa and Asia,
       and are essential keystone species in their environments. These herbivores use their trunks as 
       versatile tools for feeding, drinking, and social interaction, while their tusks are used for digging and defense. 
       Elephants display sophisticated social structures, often led by a matriarch, and they exhibit behaviors that suggest 

@@ -57,7 +57,9 @@ def get_data_output_path() -> str:
 def get_grade_data(grade: int) -> grade_data: 
     key = f'grade_{grade}'
     grade_info = read_data['grades_text'].get(key, {})
-    text = grade_info.get('message', f'Text for grade {grade} not found')
+    text = grade_info.get('message', None)
+    if text is None:
+        return None
     questions = [
         {"message": q['message'], "options": q['options'].split('/'), "answer": q['answer']}
         for q in grade_info.get('questions', {}).values()

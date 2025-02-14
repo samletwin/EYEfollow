@@ -2,7 +2,7 @@ from math import pi, sin, cos, floor
 from time import time, time_ns, sleep
 from enum import Enum, auto
 from tkinter import messagebox, simpledialog, Toplevel, Label, Entry, Button, font
-from tkinter.messagebox import askyesno
+from tkinter.messagebox import askyesno, showerror
 import traceback
 import tkinter as tk
 from eyetracker import EyeTracker_DM
@@ -127,6 +127,11 @@ class Test_Routine:
         self.start_countdown = 1
         self.grade = simpledialog.askinteger("Input", "Enter the level of difficulty (1-10):", minvalue=1, maxvalue=10)
         self.grade_data = config.get_grade_data(self.grade)
+        if self.grade_data is None:
+            # show error
+            showerror("Error", f"Test Data for Grade {self.grade} not found in config file. Please check the config file.")
+            self.master.routine_finished(show_popup=False)
+            return
         test_config = config.get_text_test_config()
 
         self.canvas.itemconfig(self.ball, state='hidden')
@@ -430,5 +435,4 @@ class Test_Routine:
         self.canvas.itemconfig(self.ball, state="hidden")
         self.canvas.coords(self.ball, 0, 0, self.ball_radius, self.ball_radius)
         self.canvas.itemconfig(self.saccade_ball, state="hidden")
-
         self.variable_reset()
