@@ -675,7 +675,7 @@ class TextReadingResultsCanvas(tk.Canvas):
             
             df2 = pd.read_excel(xlsx, 'Text_Reading')
             font_size = int(df2['Font_Size'][0])
-            text_lines = df2['Text'][0].split("'")
+            text_lines = df2['Text'][0].split("@")
             self.full_text = " ".join(text_lines)
 
             x_data = df2['X'].dropna()

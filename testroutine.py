@@ -251,7 +251,7 @@ class Test_Routine:
         lines = text.split("\n")
         font_height = font.Font(family='Arial',size=font_size,weight='bold').metrics('linespace')
         self.GTdata[self.current_test] = {"X": [], "Y": [], 
-            "Text": [text.replace("\n", "'")], "Font_Size": [font_size], 
+            "Text": [text.replace("\n", "@")], "Font_Size": [font_size], 
             "question": [], "user_answer": [], "correct_answer":[]}
 
         for i, line in enumerate(lines):
