@@ -6,6 +6,8 @@ Gian Favero, Steven Caro and Joshua Picchioni
 '''
 
 import tkinter as tk
+from math import pi, sin, cos
+from time import time
 from PIL import Image, ImageTk, ImageGrab
 from tkinter import ttk
 from tkinter.messagebox import *
@@ -17,6 +19,138 @@ from dataclasses import dataclass
 import pandas as pd
 from tkinter import font
 import traceback
+from typing import Dict, List
+from config import config_handler, TestParams
+
+
+class PreviewCanvas(tk.Canvas):
+    def __init__(self, master, test_name):
+        super().__init__(master, width=300, height=200, bg="black")
+        self.test_name = test_name
+        self.ball_radius = config_handler.get_ball_radius()
+        self.ball = self.create_oval(0, 0, self.ball_radius, self.ball_radius, fill="white")
+        self.animate = False
+
+    def update_preview(self, params):
+        self.params = params
+        self.draw()
+
+    def draw(self):
+        self.delete("all")
+        if self.animate:
+            self.after_cancel(self.animate)
+        
+        # Simplified drawing logic from Test_Routine
+        if "Saccade" in self.test_name:
+            pos1 = (100, 50)
+            pos2 = (200, 150)
+            self.create_oval(pos1[0]-5, pos1[1]-5, pos1[0]+5, pos1[1]+5, fill="white")
+            self.create_oval(pos2[0]-5, pos2[1]-5, pos2[0]+5, pos2[1]+5, fill="white")
+        else:
+            x = 150 + 100 * cos(2 * pi * self.params.get('Frequency', 1) * time())
+            y = 100 + 50 * sin(2 * pi * self.params.get('Frequency', 1) * time())
+            self.create_oval(x-5, y-5, x+5, y+5, fill="white")
+        
+        self.animate = self.after(50, self.draw)
+
+class SettingsWindow(tk.Toplevel):
+    def __init__(self, master):
+        super().__init__(master)
+        self.title("Test Configuration Settings")
+        self.geometry("1000x700")
+        self.config_handler = config_handler
+        
+        self.notebook = ttk.Notebook(self)
+        self.create_general_tab()
+        self.create_test_tabs()
+        self.entries_for_test_name:Dict[str, List[str]] = {}
+        self.notebook.pack(expand=True, fill='both')
+        
+        ttk.Button(self, text="Save", command=self.save_settings).pack(pady=10)
+
+    def create_general_tab(self):
+        tab = ttk.Frame(self.notebook)
+        ttk.Label(tab, text="Ball Radius (px):").grid(row=0, column=0)
+        self.ball_radius_entry = ttk.Entry(tab)
+        self.ball_radius_entry.insert(0, str(self.config_handler.get_ball_radius()))
+        self.ball_radius_entry.grid(row=0, column=1)
+        self.notebook.add(tab, text="General")
+
+    def create_test_tabs(self):
+        for test_name, params in self.config_handler.get_all_test_params().items():
+            tab = ttk.Frame(self.notebook)
+            self.create_test_controls(tab, test_name, params)
+            self.notebook.add(tab, text=test_name.replace("_", " "))
+
+    def create_test_controls(self, tab, test_name: str, params: TestParams):
+        # Preview Canvas
+        preview_frame = ttk.Frame(tab)
+        preview_frame.grid(row=0, column=2, rowspan=4, padx=10)
+        self.preview = PreviewCanvas(preview_frame, test_name)
+        self.preview.pack(pady=10)
+        self.preview.draw()
+
+        row = 0
+        # Parameter controls
+        if test_name == "Text_Reading":
+            ttk.Label(tab, text="Minimum:").grid(row=row, column=0)
+            font_entry = ttk.Entry(tab)
+            font_entry.insert(0, str(params.minimum_font_size)
+            font_entry.grid(row=row, column=1)
+            row += 1
+
+            ttk.Label(tab, text="Horizontal Padding (Px):").grid(row=row, column=0)
+            horizontal_entry = ttk.Entry(tab)
+            horizontal_entry.insert(0, str(params.padding_horizontal_px)
+            horizontal_entry.grid(row=row, column=1)
+            row += 1
+
+            ttk.Label(tab, text="Vertical Padding (Px):").grid(row=row, column=0)
+            vertical_entry = ttk.Entry(tab)
+            vertical_entry.insert(0, str(params.padding_vertical_px)
+            vertical_entry.grid(row=row, column=1)
+            row += 1
+        else:
+            ttk.Label(tab, text="Duration:").grid(row=row, column=0)
+            duration_entry = ttk.Entry(tab)
+            duration_entry.insert(0, str(params.duration)
+            duration_entry.grid(row=row, column=1)
+            row += 1
+
+            ttk.Label(tab, text="Frequency:").grid(row=row, column=0)
+            freq_entry = ttk.Entry(tab)
+            freq_entry.insert(0, str(params.get('Frequency', '')))
+            freq_entry.grid(row=row, column=1)
+            row += 1
+
+        # Add input validation and preview updates
+        for entry in [duration_entry, freq_entry]:
+            entry.bind("<KeyRelease>", lambda e: self.update_preview(test_name))
+
+    def update_preview(self, test_name):
+        params = {
+            'Duration': float(self.get_entry_value(test_name, 'Duration')),
+            'Frequency': float(self.get_entry_value(test_name, 'Frequency'))
+        }
+        self.preview.update_preview(params)
+
+    def save_settings(self):
+        # Save general settings
+        self.config_handler.update_test_param('general', 'ball_radius_px', 
+                                            int(self.ball_radius_entry.get()))
+        
+        # Save test-specific settings
+        for test_name in self.config_handler.get_all_test_names():
+            params = {
+                'Duration': float(self.get_entry_value(test_name, 'Duration')),
+                'Frequency': float(self.get_entry_value(test_name, 'Frequency'))
+            }
+            for param, value in params.items():
+                self.config_handler.update_test_param(test_name, param, value)
+        
+        self.config_handler.save_config()
+        showinfo("Saved", "Settings updated successfully")
+        self.destroy()
 
 class Home_Screen(tk.Frame):
     '''
@@ -47,7 +181,9 @@ class Home_Screen(tk.Frame):
                               command=lambda:self.controller.create_test_routine())
         self.results_b = tk.Button(self, text = 'Results', bg = "white", height=5, width=20, 
                               command=lambda:self.controller.show_results())
-
+        
+        self.settings_b = tk.Button(self, text="⚙ Settings", bg="white", command=self.open_settings)
+        self.settings_b.grid(row=4, column=0, columnspan=9, pady=10)
         # Place logo png
         logo_image = Image.open("images/Logo.png")
         logo_photo_image = ImageTk.PhotoImage(logo_image)
@@ -65,6 +201,9 @@ class Home_Screen(tk.Frame):
         self.TR_b.grid(row=1, column=7, padx=10)
         self.start_b.grid(row=2, column=0, columnspan = 9, pady=50)
         self.results_b.grid(row=3, column=0, columnspan = 9, pady=50)
+
+    def open_settings(self):
+        SettingsWindow(self.master)
 
     def configure_grid(self):
         '''

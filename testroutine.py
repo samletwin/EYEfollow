@@ -6,7 +6,7 @@ from tkinter.messagebox import askyesno
 import traceback
 import tkinter as tk
 from eyetracker import EyeTracker_DM
-import config
+from config import config_handler
 import threading
 
 draw_refresh_rate   = 5       # ms
@@ -30,8 +30,8 @@ class Test_Routine:
         self.GTdata  = {'ScreenConfig': {'Width':[self.master.width], 'Height':[self.master.height]}}
         self.tracker.set_screen_cfg('ScreenConfig', self.GTdata["ScreenConfig"])
 
-        self.test_params = config.get_full_test_config()
-        self.ball_radius = config.get_ball_radius_px()
+        self.test_params = config_handler.get_all_test_params()
+        self.ball_radius = config_handler.get_ball_radius()
         self.ball = self.canvas.create_oval(0, 0, self.ball_radius, self.ball_radius, fill="white")
         self.canvas.itemconfig(self.ball, state='hidden')
 
@@ -126,8 +126,9 @@ class Test_Routine:
         self.time_ref = time()
         self.start_countdown = 1
         self.grade = simpledialog.askinteger("Input", "Enter the level of difficulty (1-10):", minvalue=1, maxvalue=10)
-        self.grade_data = config.get_grade_data(self.grade)
-        test_config = config.get_text_test_config()
+        # self.grade_data = config.get_grade_data(self.grade)
+        # test_config = config.get_text_test_config()
+        test_config = None
 
         self.canvas.itemconfig(self.ball, state='hidden')
         self.canvas.itemconfig(self.saccade_ball, state='hidden')

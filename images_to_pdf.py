@@ -1,6 +1,5 @@
 from fpdf import FPDF
 from PIL import Image
-from config import get_grade_data
 import os
 import threading
 import string
@@ -43,7 +42,8 @@ def images_to_pdf(image_paths, output_pdf, title=None, user_answers=None, grade=
             pdf.image(image_path, x=(page_width - scaled_width) / 2, y=(page_height - scaled_height) / 2, w=scaled_width, h=scaled_height)
 
         if len(user_answers) > 0:
-            grade_data = get_grade_data(grade)
+            # grade_data = get_grade_data(grade)
+            grade_data = None
             pdf.add_page()
             pdf.set_font("Arial", size=12)
             score = 0

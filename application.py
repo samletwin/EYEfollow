@@ -23,7 +23,7 @@ from custom_tk import custom_askstring
 # Project Imports
 from testroutine import Test_Routine, Routine_State
 from frames import Home_Screen, Test_Routine_Canvas, Results_Frame, QuestionsFrame
-from config import load_config_files, get_data_output_path
+from config import config_handler
 
 # Set resolution for screen
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
@@ -43,10 +43,7 @@ class Application(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
         self.title(window_title)
 
-        # load config
-        load_config_files()
-        
-        self.path = get_data_output_path()
+        self.path = config_handler.get_data_path()
 
         # If no folder, make it
         if not os.path.exists(self.path):
