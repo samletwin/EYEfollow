@@ -259,8 +259,8 @@ def eye_data_to_image(dataPC, dataGaze, dataGT, key, title, pathToSave=None, plo
                 print(f"Error computing metric: {e}")
                 rmse_l = "Error"
                 rmse_r = "Error"
-            ax[0].set_title(f"Left eye\nRMSE={rmse_l}")
-            ax[1].set_title(f"Right eye\nRMSE={rmse_r}")
+            ax[0].set_title(f"Left eye\nScore={rmse_l}")
+            ax[1].set_title(f"Right eye\nScore={rmse_r}")
         elif('Smooth' in key):
             try:
                 rmse_l, corr_l = smooth_pursuit_metric('L', key, dataGaze, dataGT)
@@ -269,8 +269,8 @@ def eye_data_to_image(dataPC, dataGaze, dataGT, key, title, pathToSave=None, plo
                 print(f"Error computing metric: {e}")
                 rmse_l, corr_l = "Error","Error"
                 rmse_r, corr_r = "Error","Error"
-            ax[0].set_title(f"Left eye\nRMSE={rmse_l} CORR={corr_l}")
-            ax[1].set_title(f"Right eye\nRMSE={rmse_r} CORR={corr_r}")
+            ax[0].set_title(f"Left eye\nScore={rmse_l}")
+            ax[1].set_title(f"Right eye\nScore={rmse_r}")
         else:
             ax[0].set_title(f"Left eye")
             ax[1].set_title(f"Right eye")

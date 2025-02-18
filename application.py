@@ -254,6 +254,7 @@ class Application(tk.Tk):
         # Display results or move to the next test
         for result in results:
             print(f"Q: {result['question']}, User: {result['user_answer']}, Correct: {result['correct_answer']}")
+        self.unbind("<KeyPress>")
         self.test_routine.transition_to_next_test(results)
 
     def show_results(self):
@@ -269,20 +270,18 @@ class Application(tk.Tk):
         Create the array of routines selected for the current sequence of vision tests
         '''
         # Bring calibration window to the forefront
-        while True:
-            activate_gazepoint(self.gazepoint_window)
+        activate_gazepoint(self.gazepoint_window)
 
-            while gw.getActiveWindowTitle() == "Gazepoint Control x64" and not None:
-                sleep(10e-2)
+        while gw.getActiveWindowTitle() == "Gazepoint Control x64" and not None:
+            sleep(10e-2)
 
-            # check if can communicate with gazepoint
-            retval = self.test_routine.tracker.test_collection()
-            if retval is True:
-                break
-            else:
-                showerror("Error", "Error attempting to communicate with Gazepoint. Restarting Gazepoint.")
-                print("Failed to communicate with eyetracker. Restarting")
-                self.restart_gazepoint()
+        # check if can communicate with gazepoint
+        retval = self.test_routine.tracker.test_collection()
+        if retval is False:
+            showerror("Error", "Error attempting to communicate with Gazepoint. Eyefollow needs to be restarted. Program will close.")
+            print("Failed to communicate with eyetracker. Exiting")
+            sys.exit(-1)
+            
 
 
         invalid_windows_file_characters = ['/','\\',':','*','?','"','<','>','|']

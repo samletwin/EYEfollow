@@ -158,13 +158,13 @@ class Test_Routine:
         self.master.show_questions(self.grade_data.questions)
 
     def transition_to_next_test(self, results):
-        # Transition to the next test in the sequence or the main screen
+        # Transition to next test from text reading
         for result in results:
-            self.GTdata[self.current_test]["question"].append(result['question'])
-            self.GTdata[self.current_test]["user_answer"].append(result['user_answer'])
-            self.GTdata[self.current_test]["correct_answer"].append(result['correct_answer'])
+            self.GTdata["Text_Reading"]["question"].append(result['question'])
+            self.GTdata["Text_Reading"]["user_answer"].append(result['user_answer'])
+            self.GTdata["Text_Reading"]["correct_answer"].append(result['correct_answer'])
         if len(results) > 0:
-            self.GTdata[self.current_test]['grade'] = self.grade
+            self.GTdata["Text_Reading"]['grade'] = self.grade
         self.state = Routine_State.update_test
         self.current_test = next(self.test_names, "Done")
 
@@ -323,7 +323,7 @@ class Test_Routine:
             self.canvas.coords(self.ball, x_cen-radius/2, y_cen-radius/2, x_cen+radius/2, y_cen+radius/2)
         
         self.canvas.itemconfig(self.ball, state="normal")
-        self.canvas.itemconfig(self.countdown_text, text=f'{self.count}\n{self.test_params[self.current_test]["Instruction"]}',state='normal')
+        self.canvas.itemconfig(self.countdown_text, text=f'{self.count}\n{self.test_params[self.current_test]["Instruction"]}',state='normal', font=("Arial", 35, "bold"))
         
         if time() - self.time_ref >= 1:  
             self.count -= 1
@@ -431,7 +431,7 @@ class Test_Routine:
         if self.collect_data and self.state is not Routine_State.countdown:    
             self.tracker.stop_collection()
         
-        self.canvas.itemconfig(self.countdown_text, state='hidden')
+        self.canvas.itemconfig(self.countdown_text, state='hidden', font=("Arial", 35, "bold"))
         self.canvas.itemconfig(self.ball, state="hidden")
         self.canvas.coords(self.ball, 0, 0, self.ball_radius, self.ball_radius)
         self.canvas.itemconfig(self.saccade_ball, state="hidden")
