@@ -325,6 +325,7 @@ test_params:
     Minimum_Font_Size: 20
     Padding_Horizontal_Px: 200
     Padding_Vertical_Px: 200
+    Line_Spacing: 1.5
   Vertical_Saccade:
     Duration: 10
     Frequency: 1

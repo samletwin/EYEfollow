@@ -1,7 +1,7 @@
-from math import pi, sin, cos, floor
+from math import pi, sin, cos
 from time import time, time_ns, sleep
 from enum import Enum, auto
-from tkinter import messagebox, simpledialog, Toplevel, Label, Entry, Button, font
+from tkinter import messagebox, simpledialog, font
 from tkinter.messagebox import askyesno, showerror
 import traceback
 import tkinter as tk
@@ -138,8 +138,8 @@ class Test_Routine:
         self.canvas.itemconfig(self.saccade_ball, state='hidden')
 
         self.display_text(self.grade_data.message, test_config.minimum_font_size,
-                        test_config.padding_hor_px, test_config.padding_ver_px)
-        self.canvas.itemconfig(self.countdown_text, state='normal')
+                        test_config.padding_hor_px, test_config.padding_ver_px, test_config.line_spacing)
+        # self.canvas.itemconfig(self.countdown_text, state='normal')
         
         self.tracker.start_collection()
         self.master.bind("<KeyPress>", lambda event: self.reading_finished())
@@ -151,6 +151,7 @@ class Test_Routine:
         tracking_thread.start()
 
     def reading_finished(self):
+        self.canvas.delete("text_lines")
         self.master.unbind("<KeyPress>")
         # stop tracker collection
         self.stop_tracking_event.clear()
@@ -173,7 +174,7 @@ class Test_Routine:
             self.send_tracker_message()
             sleep(0.1) # Adjust the frequency of tracking messages as needed
         
-    def wrap_text(self, text: str, max_width, max_height, min_font_size=20):
+    def wrap_text(self, text: str, max_width, max_height, min_font_size=20, line_spacing=2):
         font_size = 100  # Starting font size
         words = text.split()
         lines = []
@@ -200,12 +201,12 @@ class Test_Routine:
             # Add the last line
             lines.append(current_line.strip())
 
+            # Calculate total text height with 1.5x line spacing
+            font_height = font.Font(family='Arial', size=font_size, weight='bold').metrics('linespace')
+            total_text_height = (len(lines)-1) * font_height * line_spacing # -1 bc we dont want line spacing after last line
+            
             # Check if the wrapped text fits within the max height
-            self.canvas.itemconfig(temp_text_id, text="\n".join(lines))
-            bbox = self.canvas.bbox(temp_text_id)
-            text_height = bbox[3] - bbox[1]
-
-            if text_height <= max_height and font_size >= min_font_size:
+            if total_text_height <= max_height and font_size >= min_font_size:
                 break  # The text fits within the constraints
             else:
                 # Decrease the font size and try again
@@ -217,34 +218,28 @@ class Test_Routine:
                 self.canvas.itemconfig(temp_text_id, font=("Arial", font_size, "bold"))
 
         # Remove the temporary text object
-        y1, y2 = bbox[1], bbox[3]
+        y1 = self.master.height / 2 - total_text_height / 2
+        y2 = y1 + total_text_height
         self.canvas.delete(temp_text_id)
 
-        return "\n".join(lines), font_size, y1, y2
+        return lines, font_size, y1, y2
 
-    def display_text(self, text, min_font_size, padding_hor_px=450, padding_ver_px=300, mode='all'):
+
+    def display_text(self, text, min_font_size, padding_hor_px=450, padding_ver_px=300, line_spacing=1.5, mode='all'):
         max_width = self.master.width - padding_hor_px  # Set some padding
         max_height = self.master.height - padding_ver_px  # Set some padding
-        wrapped_text, font_size, y1, y2 = self.wrap_text(text, max_width, max_height, min_font_size)
-        self.generate_gtdata_for_text(wrapped_text, font_size, y1, y2)
+        lines, font_size, y1, y2 = self.wrap_text(text, max_width, max_height, min_font_size, line_spacing)
+        self.generate_gtdata_for_text("\n".join(lines), font_size, y1, y2)
 
-        # Update the font of countdown_text to the calculated font size
-        self.canvas.itemconfig(self.countdown_text, font=("Arial", font_size, "bold"))
+        font_settings = ("Arial", font_size, "bold")
+        
+        start_y = y1
+        font_height = font.Font(family='Arial', size=font_size, weight='bold').metrics('linespace')
+        
+        for line in lines:
+            self.canvas.create_text(self.master.width / 2, start_y, text=line, font=font_settings, justify="center", fill="white", tags="text_lines")
+            start_y += font_height * line_spacing
 
-        def type_text(index=0):
-            if mode == 'letter':
-                if index < len(wrapped_text):
-                    self.canvas.itemconfig(self.countdown_text, text=wrapped_text[:index + 1])
-                    self.canvas.after(100, type_text, index + 1)
-            elif mode == 'word':
-                words = wrapped_text.split()
-                if index < len(words):
-                    self.canvas.itemconfig(self.countdown_text, text=' '.join(words[:index + 1]))
-                    self.canvas.after(300, type_text, index + 1)
-            elif mode == 'all':
-                self.canvas.itemconfig(self.countdown_text, text=wrapped_text)
-
-        type_text()
     
     def generate_gtdata_for_text(self, text: str, font_size, y1, y2):
         # Split the wrapped text into lines

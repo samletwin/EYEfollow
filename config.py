@@ -16,6 +16,7 @@ class text_test_config:
     padding_hor_px: int
     padding_ver_px: int
     minimum_font_size: int
+    line_spacing: int
 
 def write_reading_config():
     with open('config/reading.yaml', 'w') as file:
@@ -71,7 +72,8 @@ def get_text_test_config() -> text_test_config:
     return text_test_config(
         padding_hor_px=data['Padding_Horizontal_Px'],
         padding_ver_px=data['Padding_Vertical_Px'],
-        minimum_font_size=data['Minimum_Font_Size']
+        minimum_font_size=data['Minimum_Font_Size'],
+        line_spacing=data['Line_Spacing']
     )
 
 # TODO: should add error handling for incorrect config
