@@ -1,5 +1,4 @@
 @echo off
-cd /d "\path\here"
 
 echo Pulling latest changes from Git...
 git pull origin main

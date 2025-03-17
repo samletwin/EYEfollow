@@ -25,7 +25,7 @@ test_params:
     Instruction: Follow the dot
   Text_Reading:
     Minimum_Font_Size: 20
-    Padding_Horizontal_Px: 200
+    Padding_Horizontal_Px: 500
     Padding_Vertical_Px: 200
     Line_Spacing: 3
   Vertical_Saccade:

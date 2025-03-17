@@ -517,8 +517,8 @@ class TextReadingResultsCanvas(tk.Canvas):
         self.delete("all")
         self.config(bg="white")
         self.draw_grid()
-        self.draw_points()
         self.draw_text()
+        self.draw_points()
         self.draw_score(self.total_questions, self.total_correct)
         self.draw_legend()
         self.draw_title("Text_Reading")
@@ -591,7 +591,8 @@ class TextReadingResultsCanvas(tk.Canvas):
                 y_centre_scaled,
                 text=text_data.text,
                 font=("Arial", font_size, "bold"),
-                justify='center'
+                justify='center',
+                fill="grey"
             )
 
     def plot_data(self, left_eye_point, right_eye_point):
@@ -605,10 +606,9 @@ class TextReadingResultsCanvas(tk.Canvas):
     def scale_point(self, point):
         """
         Convert normalized (0-1) coordinates to canvas pixels.
-        Invert y because in typical computer graphics, y increases downward.
         """
         x = self.padding + point[0] * (self.width - 2 * self.padding)
-        y = self.height - (self.padding + point[1] * (self.height - 2 * self.padding))
+        y = self.padding + point[1] * (self.height - 2 * self.padding)
         return x, y
 
     def draw_points(self):
@@ -618,12 +618,12 @@ class TextReadingResultsCanvas(tk.Canvas):
         if self.left_eye_point:
             for x,y in zip(self.left_eye_point[0], self.left_eye_point[1]):
                 left_eye = self.scale_point((x, y))
-                self.create_text(left_eye[0], left_eye[1], text='•', font=("Arial", 12), fill='red')
+                self.create_text(left_eye[0], left_eye[1], text='-', font=("Arial", 16), fill='red')
         
         if self.right_eye_point:
             for x, y in zip(self.right_eye_point[0], self.right_eye_point[1]):
                 right_eye = self.scale_point((x,y))
-                self.create_text(right_eye[0], right_eye[1], text='•', font=("Arial", 12), fill='blue')
+                self.create_text(right_eye[0], right_eye[1], text='-', font=("Arial", 16), fill='blue')
 
     def draw_legend(self):
         """
